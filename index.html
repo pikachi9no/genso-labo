@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>げんそ発見ラボ</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Yomogi&family=Zen+Maru+Gothic:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg: #f7f2e6;
+  --paper: #fffaf0;
+  --ink: #23324a;
+  --ink-soft: #5a6b85;
+  --teal: #2f9e8f;
+  --teal-dark: #227568;
+  --coral: #ff8c69;
+  --coral-dark: #e06a48;
+  --gold: #e8b23d;
+  --line: #e4dcc8;
+  --font-display: 'Yomogi', sans-serif;
+  --font-ui: 'Zen Maru Gothic', sans-serif;
+}
+*{ box-sizing:border-box; }
+html{ height:100%; }
+body{
+  margin:0; font-family: var(--font-ui); background: var(--bg); color: var(--ink);
+  min-height:100vh; display:flex; align-items:flex-start; justify-content:center;
+  padding: clamp(16px,2.5vw,40px) 12px 60px;
+  background-image: radial-gradient(circle at 20px 20px, rgba(47,158,143,0.06) 2px, transparent 2px);
+  background-size: 26px 26px;
+}
+#app{ width:100%; max-width: min(760px, 96vw); }
+.card{
+  background: var(--paper);
+  border-radius: 20px;
+  border: 2px solid var(--line);
+  padding: clamp(20px,3vw,34px) clamp(16px,3vw,30px);
+  box-shadow: 0 14px 34px rgba(35,50,74,0.1);
+  margin-bottom: 14px;
+}
+h1.title{
+  font-family: var(--font-display);
+  font-size: clamp(30px, 4.6vw, 46px); text-align:center; margin: 4px 0 2px; color: var(--teal-dark);
+}
+.subtitle{ text-align:center; color: var(--ink-soft); font-size: clamp(13px,1.6vw,17px); margin: 0 0 18px; }
+.lab-emoji{ text-align:center; font-size: clamp(40px,6vw,64px); margin-bottom:4px; }
+
+button{ font-family: var(--font-ui); cursor:pointer; border:none; }
+.mode-btn{
+  display:flex; align-items:center; gap:14px; width:100%;
+  background: #fff; border: 2px solid var(--line); border-radius:16px;
+  padding: clamp(14px,1.8vw,20px) clamp(16px,2vw,22px); margin-bottom:12px; text-align:left;
+  transition: transform .08s, border-color .15s;
+}
+.mode-btn:active{ transform: scale(0.98); }
+.mode-btn .emo{ font-size: clamp(28px,3.2vw,38px); }
+.mode-btn .txt b{ display:block; font-size: clamp(15.5px,1.9vw,20px); color: var(--ink); }
+.mode-btn .txt span{ font-size: clamp(11.5px,1.4vw,14.5px); color: var(--ink-soft); }
+.mode-btn.teal{ border-color: var(--teal); }
+.mode-btn.coral{ border-color: var(--coral); }
+.mode-btn.gold{ border-color: var(--gold); }
+
+.progress-chip{
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  background: #eef6f2; border-radius: 999px; padding: 10px 18px; margin: 0 auto 18px;
+  width:fit-content; font-size: clamp(13px,1.5vw,16px); color: var(--teal-dark); font-weight:700;
+}
+
+/* ---------- periodic dex grid ---------- */
+.dex-wrap{ overflow-x:auto; padding-bottom:6px; }
+.dex-grid{
+  display:grid;
+  grid-template-columns: repeat(18, minmax(24px,1fr));
+  grid-auto-rows: minmax(22px, auto);
+  gap: clamp(3px,0.4vw,6px);
+  min-width: 560px;
+  width:100%;
+}
+.cell{
+  aspect-ratio: 1/1;
+  border-radius: 5px;
+  display:flex; align-items:center; justify-content:center;
+  font-size: clamp(10.5px,1.1vw,14px); font-weight:900; color: #fff;
+  position:relative; cursor:pointer;
+  box-shadow: inset 0 -2px 0 rgba(0,0,0,0.12);
+}
+.cell.locked{
+  background: #dfe3ea; color: #a9b1c0; cursor:pointer;
+  box-shadow: none;
+}
+.cell.locked::after{ content:'?'; }
+.cell.future{
+  background: repeating-linear-gradient(45deg, #eceff3, #eceff3 4px, #e3e7ed 4px, #e3e7ed 8px);
+  color:#c3cad4;
+}
+.cell.selected{ outline: 3px solid var(--ink); outline-offset:1px; }
+
+.detail-panel{
+  margin-top:14px; padding: clamp(14px,1.8vw,20px); border-radius:14px;
+  background: #eef6f2; border: 2px dashed var(--teal);
+  display:flex; gap:14px; align-items:center;
+}
+.detail-panel.future{ background:#f2f2f2; border-color:#c3cad4; }
+.detail-panel .demo{ font-size: clamp(34px,4vw,46px); }
+.detail-panel .txt b{ font-family: var(--font-display); font-size: clamp(20px,2.4vw,26px); color:var(--teal-dark); display:block; }
+.detail-panel .txt .yomi{ font-size: clamp(12px,1.4vw,15px); color: var(--ink-soft); }
+.detail-panel .txt .fact{ font-size: clamp(12px,1.4vw,15px); color: var(--ink); margin-top:4px; }
+.detail-empty{ text-align:center; color: var(--ink-soft); font-size: clamp(12.5px,1.4vw,15px); padding: 16px 0; }
+
+.legend{ display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; font-size: clamp(10px,1.1vw,12.5px); color: var(--ink-soft); }
+.legend span{ display:inline-flex; align-items:center; gap:4px; }
+.legend i{ width:10px; height:10px; border-radius:3px; display:inline-block; }
+
+/* ---------- quiz ---------- */
+.quiz-top{ display:flex; justify-content:space-between; font-size: clamp(12px,1.3vw,15px); color: var(--ink-soft); margin-bottom:10px; }
+.prompt-box{
+  background: linear-gradient(180deg, #fff, #fbf6e8);
+  border: 2px solid var(--line); border-radius:16px;
+  padding: clamp(26px,3.4vw,42px) 14px; text-align:center; margin-bottom:18px;
+}
+.prompt-emoji{ font-size: clamp(52px,7vw,82px); margin-bottom:8px; }
+.prompt-symbol{ font-family: var(--font-display); font-size: clamp(56px,7.5vw,88px); color: var(--teal-dark); }
+.prompt-clue{ font-size: clamp(15px,1.9vw,20px); color: var(--ink); margin-top:4px; line-height:1.5; }
+
+.choices{ display:grid; grid-template-columns: 1fr 1fr; gap: clamp(10px,1.3vw,16px); }
+.choice-btn{
+  background:#fff; border: 2px solid var(--line); border-radius:14px;
+  padding: clamp(12px,1.6vw,18px) 6px; text-align:center; transition: transform .08s;
+}
+.choice-btn:active{ transform: scale(0.97); }
+.choice-btn .csym{ font-family: var(--font-display); font-size: clamp(22px,2.6vw,30px); color: var(--ink); display:block; }
+.choice-btn .cname{ font-size: clamp(12.5px,1.5vw,16px); color: var(--ink-soft); display:block; margin-top:2px; }
+.choice-btn.correct{ background:#e4f7ec; border-color:#63c98a; }
+.choice-btn.wrong{ background:#fde8e4; border-color:#ef8a72; }
+.choice-btn:disabled{ opacity:0.85; }
+
+.fact-reveal{
+  margin-top:14px; padding: clamp(12px,1.6vw,18px) clamp(14px,1.8vw,20px); border-radius:12px; background:#fff6e0;
+  border: 2px dashed var(--gold); font-size: clamp(13px,1.6vw,16px); color: var(--ink); display:none;
+}
+.fact-reveal.show{ display:block; }
+.fact-reveal.wrongbox{ background:#fdeee9; border-color: var(--coral); }
+
+.btn-primary{
+  display:block; width:100%; margin-top:14px;
+  background: linear-gradient(180deg, #3db3a2, var(--teal-dark)); color:#fff;
+  font-weight:900; font-size: clamp(16px,1.9vw,20px); padding: clamp(14px,1.8vw,18px) 0; border-radius:14px;
+  box-shadow: 0 5px 0 #1c5f54;
+}
+.btn-primary:active{ transform: translateY(3px); box-shadow:none; }
+.btn-ghost{
+  display:block; width:100%; margin-top:10px; background:transparent;
+  border: 1.5px solid var(--line); color: var(--ink-soft); border-radius:12px;
+  padding: clamp(10px,1.3vw,14px) 0; font-size: clamp(13px,1.5vw,16px); font-weight:700;
+}
+.streak{ font-weight:700; color: var(--coral-dark); }
+
+/* ---------- compound quiz ---------- */
+.combo-row{ display:flex; align-items:center; justify-content:center; gap: clamp(10px,1.3vw,16px); flex-wrap:wrap; }
+.combo-chip{
+  background:#fff; border:2px solid var(--line); border-radius:14px;
+  padding: clamp(10px,1.4vw,16px) clamp(14px,1.8vw,20px); text-align:center; min-width:76px;
+}
+.combo-chip .ce{ font-size: clamp(26px,3.2vw,36px); display:block; }
+.combo-chip .cs{ font-family: var(--font-display); font-size: clamp(20px,2.4vw,26px); color: var(--teal-dark); display:block; }
+.combo-chip .cn{ font-size: clamp(10.5px,1.2vw,13px); color: var(--ink-soft); }
+.combo-op{ font-family: var(--font-display); font-size: clamp(26px,3vw,34px); color: var(--ink-soft); }
+
+.combo-dex{ display:flex; flex-wrap:wrap; gap: clamp(6px,0.8vw,10px); margin-top:4px; }
+.combo-cell{
+  width: clamp(44px,5vw,56px); height: clamp(44px,5vw,56px); border-radius:10px;
+  display:flex; align-items:center; justify-content:center;
+  font-size: clamp(20px,2.4vw,26px); cursor:pointer;
+  background:#dfe3ea; box-shadow: inset 0 -2px 0 rgba(0,0,0,0.12);
+}
+.combo-cell.locked{ color:#a9b1c0; }
+
+/* ---------- tier progress & rarity ---------- */
+.tier-row{ display:flex; gap:6px; justify-content:center; margin: 0 0 16px; flex-wrap:wrap; }
+.tier-chip{
+  font-size: clamp(10.5px,1.2vw,13px); font-weight:700; padding:6px 11px; border-radius:999px;
+  color:#fff;
+}
+.tier-chip.easy{ background:#63c98a; }
+.tier-chip.medium{ background:#4f9dd6; }
+.tier-chip.high{ background: linear-gradient(120deg,#c98fe8,#f2ce7c); box-shadow: 0 0 10px rgba(242,206,124,0.7); }
+.tier-chip.locked{ background:#c3cad4; color:#7a828e; box-shadow:none; }
+
+.prompt-box.rare{
+  background: linear-gradient(180deg, #fff9e8, #fdeefb);
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(232,178,61,0.25), 0 0 18px rgba(232,178,61,0.35);
+  position:relative;
+}
+.rare-badge{
+  position:absolute; top:-12px; left:50%; transform:translateX(-50%);
+  background: linear-gradient(120deg,#c98fe8,#f2ce7c); color:#fff; font-weight:900;
+  font-size: clamp(11px,1.3vw,13px); padding:5px 14px; border-radius:999px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.2); white-space:nowrap;
+}
+.medium-badge{
+  position:absolute; top:-12px; left:50%; transform:translateX(-50%);
+  background: var(--teal); color:#fff; font-weight:900;
+  font-size: clamp(11px,1.3vw,13px); padding:5px 14px; border-radius:999px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.15); white-space:nowrap;
+}
+.cell.rare-unlocked{ box-shadow: 0 0 0 2px #f2ce7c, 0 0 10px rgba(242,206,124,0.8); }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+/* ===================== クイズに出る元素 (全118種、3段階のレベル分け) ===================== */
+const EASY_ELEMENTS = [
+ {num:1, symbol:"H",  name:"水素",       yomi:"すいそ",       cat:"nonmetal", period:1, group:1,  emoji:"💧", tier:"easy", clue:"みずをつくる なかまだよ", fact:"うちゅうで いちばん たくさんある げんそだよ"},
+ {num:2, symbol:"He", name:"ヘリウム",   yomi:"へりうむ",     cat:"noble",    period:1, group:18, emoji:"🎈", tier:"easy", clue:"ふうせんを ふわふわ うかせるよ", fact:"くうきより かるいから ふうせんが そらに あがるんだよ"},
+ {num:3, symbol:"Li", name:"リチウム",   yomi:"りちうむ",     cat:"alkali",   period:2, group:1,  emoji:"🔋", tier:"easy", clue:"でんちの なかにいるよ", fact:"スマホや ゲームきの でんちにも つかわれているよ"},
+ {num:4, symbol:"Be", name:"ベリリウム", yomi:"べりりうむ",   cat:"alkaline", period:2, group:2,  emoji:"💎", tier:"easy", clue:"たからものみたいな かたい石にいるよ", fact:"かるくて じょうぶだから ロケットのぶひんにも つかわれるよ"},
+ {num:5, symbol:"B",  name:"ホウ素",     yomi:"ほうそ",       cat:"metalloid",period:2, group:13, emoji:"🧴", tier:"easy", clue:"せっけんやガラスを つよくするよ", fact:"ガラスを わりにくくする ちからが あるよ"},
+ {num:6, symbol:"C",  name:"炭素",       yomi:"たんそ",       cat:"nonmetal", period:2, group:14, emoji:"✏️", tier:"easy", clue:"えんぴつのしんは これでできているよ", fact:"ダイヤモンドも たんその なかまで できているよ"},
+ {num:7, symbol:"N",  name:"窒素",       yomi:"ちっそ",       cat:"nonmetal", period:2, group:15, emoji:"🌬️", tier:"easy", clue:"くうきの中で いちばん おおい気体だよ", fact:"しょくぶつが そだつときの えいようにも なるよ"},
+ {num:8, symbol:"O",  name:"酸素",       yomi:"さんそ",       cat:"nonmetal", period:2, group:16, emoji:"🫁", tier:"easy", clue:"いきをすうときに つかう気体だよ", fact:"火が もえるときにも ひつような 気体だよ"},
+ {num:9, symbol:"F",  name:"フッ素",     yomi:"ふっそ",       cat:"halogen",  period:2, group:17, emoji:"🦷", tier:"easy", clue:"はみがきこに入っていて 歯をまもるよ", fact:"むし歯を ふせぐ ちからが あるよ"},
+ {num:10,symbol:"Ne", name:"ネオン",     yomi:"ねおん",       cat:"noble",    period:2, group:18, emoji:"💡", tier:"easy", clue:"光る かんばん(ネオンサイン)を 光らせるよ", fact:"電気を ながすと きれいな 色に 光るよ"},
+ {num:11,symbol:"Na", name:"ナトリウム", yomi:"なとりうむ",   cat:"alkali",   period:3, group:1,  emoji:"🧂", tier:"easy", clue:"しおの なかまだよ", fact:"からだの中でも たいせつな はたらきを しているよ"},
+ {num:12,symbol:"Mg", name:"マグネシウム",yomi:"まぐねしうむ",cat:"alkaline", period:3, group:2,  emoji:"🎆", tier:"easy", clue:"花火の しろく光るところに つかわれるよ", fact:"やさいにも すこし ふくまれているよ"},
+ {num:13,symbol:"Al", name:"アルミニウム",yomi:"あるみにうむ",cat:"other",    period:3, group:13, emoji:"🥫", tier:"easy", clue:"ジュースの かんに つかわれているよ", fact:"かるくて さびにくいから ひこうきにも つかわれるよ"},
+ {num:14,symbol:"Si", name:"ケイ素",     yomi:"けいそ",       cat:"metalloid",period:3, group:14, emoji:"💻", tier:"easy", clue:"すなやガラス、 コンピューターの中にもいるよ", fact:"コンピューターの チップの げんりょうにも なるよ"},
+ {num:15,symbol:"P",  name:"リン",       yomi:"りん",         cat:"nonmetal", period:3, group:15, emoji:"🔥", tier:"easy", clue:"マッチの 火をつけるところにいるよ", fact:"からだの ほねにも すこし ふくまれているよ"},
+ {num:16,symbol:"S",  name:"硫黄",       yomi:"いおう",       cat:"nonmetal", period:3, group:16, emoji:"♨️", tier:"easy", clue:"おんせんたまごの においのもとだよ", fact:"ゴムを じょうぶに するときにも つかわれるよ"},
+ {num:17,symbol:"Cl", name:"塩素",       yomi:"えんそ",       cat:"halogen",  period:3, group:17, emoji:"🏊", tier:"easy", clue:"プールの においのもとだよ", fact:"水を きれいに するために つかわれるよ"},
+ {num:18,symbol:"Ar", name:"アルゴン",   yomi:"あるごん",     cat:"noble",    period:3, group:18, emoji:"🌫️", tier:"easy", clue:"電球の中に 入っているガスだよ", fact:"電球の中で 光る糸を まもる やくめが あるよ"},
+ {num:19,symbol:"K",  name:"カリウム",   yomi:"かりうむ",     cat:"alkali",   period:4, group:1,  emoji:"🍌", tier:"easy", clue:"バナナに たくさん入っているよ", fact:"からだの中で しんぞうの うごきを たすけるよ"},
+ {num:20,symbol:"Ca", name:"カルシウム", yomi:"かるしうむ",   cat:"alkaline", period:4, group:2,  emoji:"🦴", tier:"easy", clue:"ほねやはを つくるよ", fact:"ぎゅうにゅうにも たくさん ふくまれているよ"},
+ {num:26,symbol:"Fe", name:"鉄",         yomi:"てつ",         cat:"Fe",       period:4, group:8,  emoji:"🧲", tier:"easy", clue:"フライパンや じしゃくにくっつく 金ぞくだよ", fact:"地球の中心にも たくさん あるといわれているよ"},
+ {num:29,symbol:"Cu", name:"銅",         yomi:"どう",         cat:"Cu",       period:4, group:11, emoji:"🪙", tier:"easy", clue:"10円玉になっている 金ぞくだよ", fact:"電気を よくとおすから 電線にも つかわれるよ"},
+ {num:30,symbol:"Zn", name:"亜鉛",       yomi:"あえん",       cat:"Zn",       period:4, group:12, emoji:"🏠", tier:"easy", clue:"やねのトタンを まもる金ぞくだよ", fact:"からだの せいちょうにも ひつような 金ぞくだよ"},
+ {num:47,symbol:"Ag", name:"銀",         yomi:"ぎん",         cat:"Ag",       period:5, group:11, emoji:"🥈", tier:"easy", clue:"ぎんメダルになる 金ぞくだよ", fact:"むかしから アクセサリーにも つかわれてきたよ"},
+ {num:79,symbol:"Au", name:"金",         yomi:"きん",         cat:"Au",       period:6, group:11, emoji:"🥇", tier:"easy", clue:"きんメダルや ゆびわになる 金ぞくだよ", fact:"さびない金ぞくだから 大むかしの たからものにも のこっているよ"},
+ {num:80,symbol:"Hg", name:"水銀",       yomi:"すいぎん",     cat:"Hg",       period:6, group:12, emoji:"🌡️", tier:"easy", clue:"むかしの体温計に 入っていたよ", fact:"じょうおんで えきたいの めずらしい 金ぞくだよ"},
+ {num:82,symbol:"Pb", name:"鉛",         yomi:"なまり",       cat:"Pb",       period:6, group:14, emoji:"🎣", tier:"easy", clue:"つりのおもりに つかわれる おもい金ぞくだよ", fact:"むかしは 水道管にも つかわれていたよ"}
+];
+
+const MEDIUM_ELEMENTS = [
+ {num:21,symbol:"Sc",name:"スカンジウム",yomi:"すかんじうむ",cat:"transition",period:4,group:3, emoji:"🚲",tier:"medium",clue:"じてんしゃのフレームなどを かるくするよ",fact:"1879年に はっけんされた めずらしい金ぞくだよ"},
+ {num:22,symbol:"Ti",name:"チタン",     yomi:"ちたん",      cat:"transition",period:4,group:4, emoji:"✈️",tier:"medium",clue:"ひこうきや めがねのフレームに つかわれるよ",fact:"かるくて さびにくい、じょうぶな金ぞくだよ"},
+ {num:23,symbol:"V", name:"バナジウム", yomi:"ばなじうむ",  cat:"transition",period:4,group:5, emoji:"🔧",tier:"medium",clue:"はがねを つよくする ために まぜられるよ",fact:"こうぐの 刃にも つかわれるよ"},
+ {num:24,symbol:"Cr",name:"クロム",     yomi:"くろむ",      cat:"transition",period:4,group:6, emoji:"🪞",tier:"medium",clue:"ピカピカ光る メッキに つかわれるよ",fact:"さびにくくする ちからが とても つよいよ"},
+ {num:25,symbol:"Mn",name:"マンガン",   yomi:"まんがん",    cat:"transition",period:4,group:7, emoji:"🔋",tier:"medium",clue:"かんでんちの なかまにも つかわれるよ",fact:"はがねを つよくする ときにも つかわれるよ"},
+ {num:27,symbol:"Co",name:"コバルト",   yomi:"こばると",    cat:"transition",period:4,group:9, emoji:"🎨",tier:"medium",clue:"あざやかな 青色の えのぐに つかわれるよ",fact:"コバルトブルーという色の 名前の もとだよ"},
+ {num:28,symbol:"Ni",name:"ニッケル",   yomi:"にっける",    cat:"transition",period:4,group:10,emoji:"🪙",tier:"medium",clue:"いろいろな こうかに つかわれる金ぞくだよ",fact:"さびにくく、じしゃくにも くっつくよ"},
+ {num:31,symbol:"Ga",name:"ガリウム",   yomi:"がりうむ",    cat:"other",     period:4,group:13,emoji:"🥄",tier:"medium",clue:"手のひらに のせると とけてしまう金ぞくだよ",fact:"スマホの ぶひんにも つかわれているよ"},
+ {num:32,symbol:"Ge",name:"ゲルマニウム",yomi:"げるまにうむ",cat:"metalloid",period:4,group:14,emoji:"📻",tier:"medium",clue:"むかしの ラジオの ぶひんに つかわれたよ",fact:"はんどうたいと よばれる とくべつな せいしつが あるよ"},
+ {num:33,symbol:"As",name:"ヒ素",       yomi:"ひそ",        cat:"metalloid",period:4,group:15,emoji:"⚠️",tier:"medium",clue:"きけんな げんそとして よく知られているよ",fact:"むかしから どくとして 知られてきたけど、はんどうたいにも つかわれるよ"},
+ {num:34,symbol:"Se",name:"セレン",     yomi:"せれん",      cat:"nonmetal", period:4,group:16,emoji:"📷",tier:"medium",clue:"光を かんじる きかいの ぶひんに つかわれたよ",fact:"からだに すこしだけ ひつような げんそでもあるよ"},
+ {num:35,symbol:"Br",name:"臭素",       yomi:"しゅうそ",    cat:"halogen",  period:4,group:17,emoji:"👃",tier:"medium",clue:"つよい においの する えきたいだよ",fact:"じょうおんで えきたいの めずらしい 非金属だよ"},
+ {num:36,symbol:"Kr",name:"クリプトン", yomi:"くりぷとん",  cat:"noble",    period:4,group:18,emoji:"🔦",tier:"medium",clue:"あかるく光る でんきゅうに つかわれることがあるよ",fact:"くうきの中に ほんの少しだけ ふくまれている 貴ガスだよ"},
+ {num:37,symbol:"Rb",name:"ルビジウム", yomi:"るびじうむ",  cat:"alkali",   period:5,group:1, emoji:"⏰",tier:"medium",clue:"せいみつな とけいに つかわれることがあるよ",fact:"空気にふれると すぐに はんのうしてしまう 金ぞくだよ"},
+ {num:38,symbol:"Sr",name:"ストロンチウム",yomi:"すとろんちうむ",cat:"alkaline",period:5,group:2,emoji:"🔴",tier:"medium",clue:"花火の 赤い色を だすのに つかわれるよ",fact:"カルシウムと よく にた せいしつを もつ金ぞくだよ"},
+ {num:39,symbol:"Y", name:"イットリウム",yomi:"いっとりうむ",cat:"transition",period:5,group:3, emoji:"📺",tier:"medium",clue:"むかしの テレビの 色を だす ぶひんに つかわれたよ",fact:"スウェーデンの 村の名前から 名づけられたよ"},
+ {num:40,symbol:"Zr",name:"ジルコニウム",yomi:"じるこにうむ",cat:"transition",period:5,group:4, emoji:"🔷",tier:"medium",clue:"ダイヤモンドに にた 宝石にも つかわれるよ",fact:"とても高い おんどにも たえられる 金ぞくだよ"},
+ {num:41,symbol:"Nb",name:"ニオブ",     yomi:"におぶ",      cat:"transition",period:5,group:5, emoji:"🏥",tier:"medium",clue:"MRIという きかいの じしゃくに つかわれるよ",fact:"とても低い おんどで 電気の ていこうが なくなる せいしつが あるよ"},
+ {num:42,symbol:"Mo",name:"モリブデン", yomi:"もりぶでん",  cat:"transition",period:5,group:6, emoji:"⚙️",tier:"medium",clue:"はがねを つよくする ために まぜられるよ",fact:"エンジンの ぶひんなどにも つかわれるよ"},
+ {num:44,symbol:"Ru",name:"ルテニウム", yomi:"るてにうむ",  cat:"transition",period:5,group:8, emoji:"🖋️",tier:"medium",clue:"ペン先を じょうぶにする ために つかわれるよ",fact:"はっきんの なかまで とても かたい金ぞくだよ"},
+ {num:45,symbol:"Rh",name:"ロジウム",   yomi:"ろじうむ",    cat:"transition",period:5,group:9, emoji:"🚙",tier:"medium",clue:"車の はいきガスを きれいにする そうちに つかわれるよ",fact:"銀色に かがやく とても めずらしい金ぞくだよ"},
+ {num:46,symbol:"Pd",name:"パラジウム", yomi:"ぱらじうむ",  cat:"transition",period:5,group:10,emoji:"🛠️",tier:"medium",clue:"車の はいきガスを きれいにする そうちにも つかわれるよ",fact:"水素を たくさん すいこむ ふしぎな せいしつが あるよ"},
+ {num:48,symbol:"Cd",name:"カドミウム", yomi:"かどみうむ",  cat:"transition",period:5,group:12,emoji:"🟡",tier:"medium",clue:"むかし あざやかな 黄色の えのぐに つかわれたよ",fact:"いまは あんぜんのため あまり つかわれなく なってきたよ"},
+ {num:49,symbol:"In",name:"インジウム", yomi:"いんじうむ",  cat:"other",    period:5,group:13,emoji:"📱",tier:"medium",clue:"スマホの がめんに つかわれている 金ぞくだよ",fact:"やわらかくて まげやすい 金ぞくだよ"},
+ {num:50,symbol:"Sn",name:"錫",         yomi:"すず",        cat:"other",    period:5,group:14,emoji:"🔧",tier:"medium",clue:"はんだづけに つかわれる金ぞくだよ",fact:"むかしから かんづめの メッキにも つかわれてきたよ"},
+ {num:51,symbol:"Sb",name:"アンチモン", yomi:"あんちもん",  cat:"metalloid",period:5,group:15,emoji:"🧯",tier:"medium",clue:"もえにくくする くすりの ざいりょうに つかわれるよ",fact:"服やカーテンを もえにくくする ために まぜられるよ"},
+ {num:52,symbol:"Te",name:"テルル",     yomi:"てるる",      cat:"metalloid",period:5,group:16,emoji:"☀️",tier:"medium",clue:"たいようこう パネルに つかわれることがあるよ",fact:"にんにくのような においを だす ことがあるよ"},
+ {num:53,symbol:"I", name:"ヨウ素",     yomi:"ようそ",      cat:"halogen",  period:5,group:17,emoji:"🩹",tier:"medium",clue:"きずぐちを しょうどくする くすりに つかわれるよ",fact:"うがい薬にも つかわれているよ"},
+ {num:54,symbol:"Xe",name:"キセノン",   yomi:"きせのん",    cat:"noble",    period:5,group:18,emoji:"🚘",tier:"medium",clue:"車の ヘッドライトに つかわれることがあるよ",fact:"くうきの中に ほんの少しだけ ふくまれている 貴ガスだよ"},
+ {num:55,symbol:"Cs",name:"セシウム",   yomi:"せしうむ",    cat:"alkali",   period:6,group:1, emoji:"⏱️",tier:"medium",clue:"せかいで いちばん せいかくな とけいに つかわれるよ",fact:"1秒の ながさを きめる もとに なっている げんそだよ"},
+ {num:56,symbol:"Ba",name:"バリウム",   yomi:"ばりうむ",    cat:"alkaline", period:6,group:2, emoji:"🥛",tier:"medium",clue:"けんこうしんだんで のむ 白い えきたいに つかわれるよ",fact:"レントゲン検査で おなかの中を 見やすくするよ"},
+ {num:72,symbol:"Hf",name:"ハフニウム", yomi:"はふにうむ",  cat:"transition",period:6,group:4, emoji:"🖥️",tier:"medium",clue:"コンピューターの ぶひんに つかわれることがあるよ",fact:"げんし炉の せいぎょぼうにも つかわれるよ"},
+ {num:73,symbol:"Ta",name:"タンタル",   yomi:"たんたる",    cat:"transition",period:6,group:5, emoji:"🔌",tier:"medium",clue:"スマホや パソコンの ぶひんに つかわれるよ",fact:"でんきを ためる ぶひん(コンデンサ)に つかわれるよ"},
+ {num:74,symbol:"W", name:"タングステン",yomi:"たんぐすてん",cat:"transition",period:6,group:6, emoji:"🪔",tier:"medium",clue:"むかしの でんきゅうの フィラメントに つかわれたよ",fact:"金ぞくの中で もっとも とけにくい げんそだよ"},
+ {num:75,symbol:"Re",name:"レニウム",   yomi:"れにうむ",    cat:"transition",period:6,group:7, emoji:"🚀",tier:"medium",clue:"ジェットエンジンの ぶひんに つかわれるよ",fact:"とても高い おんどにも たえられる めずらしい金ぞくだよ"},
+ {num:76,symbol:"Os",name:"オスミウム", yomi:"おすみうむ",  cat:"transition",period:6,group:8, emoji:"📌",tier:"medium",clue:"ペン先などの すりへりにくい ぶひんに つかわれるよ",fact:"金ぞくの中で いちばん おもい(密度が高い)げんそだよ"},
+ {num:77,symbol:"Ir",name:"イリジウム", yomi:"いりじうむ",  cat:"transition",period:6,group:9, emoji:"☄️",tier:"medium",clue:"きょうりゅうが ぜつめつした ちそうから 見つかることで ゆうめいだよ",fact:"いんせきに おおく ふくまれる めずらしい金ぞくだよ"},
+ {num:78,symbol:"Pt",name:"白金",       yomi:"はっきん",    cat:"transition",period:6,group:10,emoji:"🤍",tier:"medium",clue:"ゆびわなどの アクセサリーに つかわれる 高きゅうな金ぞくだよ",fact:"さびにくく、いつまでも かがやきが つづくよ"},
+ {num:81,symbol:"Tl",name:"タリウム",   yomi:"たりうむ",    cat:"other",    period:6,group:13,emoji:"⚠️",tier:"medium",clue:"むかし ねずみとりの どくとして つかわれたよ",fact:"いまは とりあつかいに 気をつける きけんな金ぞくだよ"},
+ {num:83,symbol:"Bi",name:"ビスマス",   yomi:"びすます",    cat:"other",    period:6,group:15,emoji:"🌈",tier:"medium",clue:"にじ色に かがやく けっしょうが うつくしい金ぞくだよ",fact:"とけた金ぞくを ゆっくり ひやすと きれいな かいだん状の けっしょうができるよ"},
+ {num:86,symbol:"Rn",name:"ラドン",     yomi:"らどん",      cat:"noble",    period:6,group:18,emoji:"🕳️",tier:"medium",clue:"土の中や おんせんから すこし でてくる 気体だよ",fact:"放射線を だす 貴ガスの なかまだよ"}
+];
+
+const HIGH_ELEMENTS = [
+ {num:43,symbol:"Tc", name:"テクネチウム",  yomi:"てくねちうむ",   cat:"transition",period:5,group:7, emoji:"🧪",tier:"high",clue:"じんこうてきに はじめて つくられた げんそだよ",fact:"しぜんには ほとんど そんざいしない、とても めずらしい げんそだよ"},
+ {num:84,symbol:"Po", name:"ポロニウム",    yomi:"ぽろにうむ",     cat:"metalloid",period:6,group:16,emoji:"☢️",tier:"high",clue:"マリー・キュリーが はっけんした、ひかる げんそだよ",fact:"とても つよい 放射線を だす、きけんで めずらしい げんそだよ"},
+ {num:85,symbol:"At", name:"アスタチン",    yomi:"あすたちん",     cat:"halogen",  period:6,group:17,emoji:"👻",tier:"high",clue:"地球の中に ほんの少ししか ないと いわれる まぼろしの げんそだよ",fact:"ちきゅう全体に ほんの数グラムしか ないと いわれているよ"},
+ {num:87,symbol:"Fr", name:"フランシウム",  yomi:"ふらんしうむ",   cat:"alkali",   period:7,group:1, emoji:"💫",tier:"high",clue:"しぜんに ある げんその中で いちばん めずらしい なかまの ひとつだよ",fact:"あっというまに べつの げんそに かわってしまう、まぼろしの金ぞくだよ"},
+ {num:88,symbol:"Ra", name:"ラジウム",      yomi:"らじうむ",       cat:"alkaline", period:7,group:2, emoji:"🌟",tier:"high",clue:"むかし 時計の ばんめんを 光らせるのに つかわれたよ",fact:"マリー・キュリーが はっけんした、暗やみで光る げんそだよ"},
+ {num:104,symbol:"Rf",name:"ラザホージウム",yomi:"らざほーじうむ", cat:"transition",period:7,group:4, emoji:"🔬",tier:"high",clue:"けんきゅうじょで じんこうてきに つくられた、まぼろしの げんそだよ",fact:"かがくしゃ ラザフォードの 名前から つけられたよ"},
+ {num:105,symbol:"Db",name:"ドブニウム",    yomi:"どぶにうむ",     cat:"transition",period:7,group:5, emoji:"🧫",tier:"high",clue:"ロシアの まちの名前から つけられた げんそだよ",fact:"ほんの少ししか つくれない、とても めずらしい げんそだよ"},
+ {num:106,symbol:"Sg",name:"シーボーギウム",yomi:"しーぼーぎうむ", cat:"transition",period:7,group:6, emoji:"⚛️",tier:"high",clue:"生きている かがくしゃの名前から つけられた めずらしい げんそだよ",fact:"シーボーグはかせの 名前から つけられたよ"},
+ {num:107,symbol:"Bh",name:"ボーリウム",    yomi:"ぼーりうむ",     cat:"transition",period:7,group:7, emoji:"🌌",tier:"high",clue:"かがくしゃ ボーアの名前から つけられた げんそだよ",fact:"ドイツの けんきゅうじょで つくられたよ"},
+ {num:108,symbol:"Hs",name:"ハッシウム",    yomi:"はっしうむ",     cat:"transition",period:7,group:8, emoji:"🔭",tier:"high",clue:"ドイツの しゅう(ヘッセン州)の名前から つけられたよ",fact:"けんきゅうじょで じんこうてきに つくられた げんそだよ"},
+ {num:109,symbol:"Mt",name:"マイトネリウム",yomi:"まいとねりうむ", cat:"transition",period:7,group:9, emoji:"🛰️",tier:"high",clue:"じょせいかがくしゃ マイトナーの 名前から つけられたよ",fact:"ほんの数こしか つくられたことのない、まぼろしの げんそだよ"},
+ {num:110,symbol:"Ds",name:"ダームスタチウム",yomi:"だーむすたちうむ",cat:"transition",period:7,group:10,emoji:"💠",tier:"high",clue:"ドイツの まちダルムシュタットの 名前から つけられたよ",fact:"じゅうい元素の中でも とくに つくるのが むずかしい げんそだよ"},
+ {num:111,symbol:"Rg",name:"レントゲニウム",yomi:"れんとげにうむ", cat:"transition",period:7,group:11,emoji:"🌠",tier:"high",clue:"レントゲン(X線)を はっけんした がくしゃの 名前から つけられたよ",fact:"とても じゅみょうが みじかい、まぼろしの げんそだよ"},
+ {num:112,symbol:"Cn",name:"コペルニシウム",yomi:"こぺるにしうむ", cat:"transition",period:7,group:12,emoji:"✨",tier:"high",clue:"てんもんがくしゃ コペルニクスの 名前から つけられたよ",fact:"じょうおんで きたいに なる、めずらしい せいしつを もつと いわれているよ"},
+ {num:113,symbol:"Nh",name:"ニホニウム",    yomi:"にほにうむ",     cat:"other",    period:7,group:13,emoji:"🗾",tier:"high",clue:"日本の けんきゅうチームが はっけんした げんそだよ",fact:"アジアで はじめて はっけんされた、日本生まれの げんそだよ"},
+ {num:114,symbol:"Fl",name:"フレロビウム",  yomi:"ふれろびうむ",   cat:"other",    period:7,group:14,emoji:"🪐",tier:"high",clue:"ロシアの けんきゅうじょの 名前から つけられたよ",fact:"とても おもい げんそで、じんこうてきに つくられたよ"},
+ {num:115,symbol:"Mc",name:"モスコビウム",  yomi:"もすこびうむ",   cat:"other",    period:7,group:15,emoji:"🌃",tier:"high",clue:"ロシアの まち モスクワの 名前から つけられたよ",fact:"ほんの少ししか つくられたことのない めずらしい げんそだよ"},
+ {num:116,symbol:"Lv",name:"リバモリウム",  yomi:"りばもりうむ",   cat:"other",    period:7,group:16,emoji:"🌋",tier:"high",clue:"アメリカの けんきゅうじょの 名前から つけられたよ",fact:"じんこうてきに つくられる、とても おもい げんそだよ"},
+ {num:117,symbol:"Ts",name:"テネシン",      yomi:"てねしん",       cat:"halogen",  period:7,group:17,emoji:"🌊",tier:"high",clue:"アメリカの しゅう テネシーの 名前から つけられたよ",fact:"ハロゲンの なかまの中で いちばん おもい げんそだよ"},
+ {num:118,symbol:"Og",name:"オガネソン",    yomi:"おがねそん",     cat:"noble",    period:7,group:18,emoji:"🌀",tier:"high",clue:"げんざい見つかっている中で いちばん おもい げんそだよ",fact:"かがくしゃ オガネシアンの 名前から つけられたよ、しゅうきひょうの さいごの げんそだよ"},
+ {num:57,symbol:"La",name:"ランタン",      yomi:"らんたん",       cat:"lanthanide",period:9,group:4, emoji:"🔦",tier:"high",clue:"ライターの いしにも つかわれる げんそだよ",fact:"レアアース(希土類)と よばれる なかまの ひとつだよ"},
+ {num:58,symbol:"Ce",name:"セリウム",      yomi:"せりうむ",       cat:"lanthanide",period:9,group:5, emoji:"🚗",tier:"high",clue:"車の はいきガスを きれいにする そうちに つかわれるよ",fact:"レアアースの中で いちばん 多く とれる げんそだよ"},
+ {num:59,symbol:"Pr",name:"プラセオジム",  yomi:"ぷらせおじむ",   cat:"lanthanide",period:9,group:6, emoji:"🎨",tier:"high",clue:"きいろい ガラスの いろづけに つかわれるよ",fact:"レアアースの なかまの 金ぞくだよ"},
+ {num:60,symbol:"Nd",name:"ネオジム",      yomi:"ねおじむ",       cat:"lanthanide",period:9,group:7, emoji:"🧲",tier:"high",clue:"世界で いちばん つよい じしゃくの ざいりょうだよ",fact:"イヤホンや モーターにも つかわれているよ"},
+ {num:61,symbol:"Pm",name:"プロメチウム",  yomi:"ぷろめちうむ",   cat:"lanthanide",period:9,group:8, emoji:"☢️",tier:"high",clue:"くらやみで ほのかに 光る、めずらしい げんそだよ",fact:"レアアースの中で ゆいいつ 放射線を だす げんそだよ"},
+ {num:62,symbol:"Sm",name:"サマリウム",    yomi:"さまりうむ",     cat:"lanthanide",period:9,group:9, emoji:"🧲",tier:"high",clue:"つよい じしゃくの ざいりょうにも つかわれるよ",fact:"ネオジムと にた つよい じしゃくを つくれるよ"},
+ {num:63,symbol:"Eu",name:"ユウロピウム",  yomi:"ゆうろぴうむ",   cat:"lanthanide",period:9,group:10,emoji:"💡",tier:"high",clue:"むかしの テレビの 赤い色を だすのに つかわれたよ",fact:"ユーロさつの ぎぞうぼうしにも つかわれているよ"},
+ {num:64,symbol:"Gd",name:"ガドリニウム",  yomi:"がどりにうむ",   cat:"lanthanide",period:9,group:11,emoji:"🏥",tier:"high",clue:"MRI検査を うけやすくする くすりに つかわれるよ",fact:"じしゃくの せいしつを しらべる けんきゅうにも つかわれるよ"},
+ {num:65,symbol:"Tb",name:"テルビウム",    yomi:"てるびうむ",     cat:"lanthanide",period:9,group:12,emoji:"📀",tier:"high",clue:"みどり色に 光る ぶひんに つかわれるよ",fact:"レアアースの なかまの 金ぞくだよ"},
+ {num:66,symbol:"Dy",name:"ジスプロシウム",yomi:"じすぷろしうむ", cat:"lanthanide",period:9,group:13,emoji:"🧲",tier:"high",clue:"じしゃくを 高い おんどでも つよいままに するよ",fact:"モーターの せいのうを あげる ために つかわれるよ"},
+ {num:67,symbol:"Ho",name:"ホルミウム",    yomi:"ほるみうむ",     cat:"lanthanide",period:9,group:14,emoji:"🔬",tier:"high",clue:"レーザーの きかいに つかわれることがあるよ",fact:"じしゃくの せいしつを しらべる けんきゅうに つかわれるよ"},
+ {num:68,symbol:"Er",name:"エルビウム",    yomi:"えるびうむ",     cat:"lanthanide",period:9,group:15,emoji:"🌐",tier:"high",clue:"インターネットの ひかりファイバーに つかわれるよ",fact:"通信を つよく する やくめを もつよ"},
+ {num:69,symbol:"Tm",name:"ツリウム",      yomi:"つりうむ",       cat:"lanthanide",period:9,group:16,emoji:"🔬",tier:"high",clue:"レアアースの中でも とくに めずらしい げんそだよ",fact:"けんきゅうや いりょうの きかいに つかわれることがあるよ"},
+ {num:70,symbol:"Yb",name:"イッテルビウム",yomi:"いってるびうむ", cat:"lanthanide",period:9,group:17,emoji:"⏱️",tier:"high",clue:"とても せいかくな とけいの けんきゅうに つかわれるよ",fact:"スウェーデンの 村の名前から 名づけられたよ"},
+ {num:71,symbol:"Lu",name:"ルテチウム",    yomi:"るてちうむ",     cat:"lanthanide",period:9,group:18,emoji:"🔬",tier:"high",clue:"レアアースの なかまの中で いちばん おもい げんそだよ",fact:"はっけんされたのは パリの むかしの名前からだよ"},
+ {num:89,symbol:"Ac",name:"アクチニウム",  yomi:"あくちにうむ",   cat:"actinide", period:10,group:4, emoji:"☢️",tier:"high",clue:"あんの中で ほのかに 光る、放射性の げんそだよ",fact:"アクチノイドという なかまの 名前の もとに なったよ"},
+ {num:90,symbol:"Th",name:"トリウム",      yomi:"とりうむ",       cat:"actinide", period:10,group:5, emoji:"⚛️",tier:"high",clue:"しょうらいの げんし力の ねんりょうとして きたいされているよ",fact:"ウランより たくさん 地球に あると いわれているよ"},
+ {num:91,symbol:"Pa",name:"プロトアクチニウム",yomi:"ぷろとあくちにうむ",cat:"actinide",period:10,group:6,emoji:"☢️",tier:"high",clue:"とても めずらしい 放射性の げんそだよ",fact:"しぜんには ほんの少ししか そんざいしないよ"},
+ {num:92,symbol:"U", name:"ウラン",        yomi:"うらん",         cat:"actinide", period:10,group:7, emoji:"☢️",tier:"high",clue:"げんし力はつでんの ねんりょうに つかわれる ゆうめいな げんそだよ",fact:"とても おもく、放射線を だす げんそだよ"},
+ {num:93,symbol:"Np",name:"ネプツニウム",  yomi:"ねぷつにうむ",   cat:"actinide", period:10,group:8, emoji:"🔭",tier:"high",clue:"わく星 かいおうせいの 名前から つけられたよ",fact:"ウランの つぎに はっけんされた げんそだよ"},
+ {num:94,symbol:"Pu",name:"プルトニウム",  yomi:"ぷるとにうむ",   cat:"actinide", period:10,group:9, emoji:"☢️",tier:"high",clue:"げんし力発電や けんきゅうに つかわれる ゆうめいな げんそだよ",fact:"わく星 めいおうせいの 名前から つけられたよ"},
+ {num:95,symbol:"Am",name:"アメリシウム",  yomi:"あめりしうむ",   cat:"actinide", period:10,group:10,emoji:"🔥",tier:"high",clue:"けむり感知き(火災報知器)の中に すこし つかわれているよ",fact:"アメリカの 名前から つけられた げんそだよ"},
+ {num:96,symbol:"Cm",name:"キュリウム",    yomi:"きゅりうむ",     cat:"actinide", period:10,group:11,emoji:"☢️",tier:"high",clue:"マリー・キュリーの 名前から つけられた げんそだよ",fact:"うちゅうたんさきの きかいにも つかわれたことが あるよ"},
+ {num:97,symbol:"Bk",name:"バークリウム",  yomi:"ばーくりうむ",   cat:"actinide", period:10,group:12,emoji:"🔬",tier:"high",clue:"アメリカの まち バークレーの 名前から つけられたよ",fact:"ほんの少ししか つくられたことのない めずらしい げんそだよ"},
+ {num:98,symbol:"Cf",name:"カリホルニウム",yomi:"かりほるにうむ", cat:"actinide", period:10,group:13,emoji:"☢️",tier:"high",clue:"アメリカの しゅう カリフォルニアの 名前から つけられたよ",fact:"きんぞくを 見つける きかいにも つかわれることがあるよ"},
+ {num:99,symbol:"Es",name:"アインスタイニウム",yomi:"あいんすたいにうむ",cat:"actinide",period:10,group:14,emoji:"🔬",tier:"high",clue:"かがくしゃ アインシュタインの 名前から つけられたよ",fact:"すいそばくだんの じっけんの あとに 見つかった げんそだよ"},
+ {num:100,symbol:"Fm",name:"フェルミウム", yomi:"ふぇるみうむ",   cat:"actinide", period:10,group:15,emoji:"🔬",tier:"high",clue:"かがくしゃ フェルミの 名前から つけられたよ",fact:"アインスタイニウムと おなじ じっけんで 見つかったよ"},
+ {num:101,symbol:"Md",name:"メンデレビウム",yomi:"めんでれびうむ", cat:"actinide", period:10,group:16,emoji:"🔬",tier:"high",clue:"周期表を つくった メンデレーエフの 名前から つけられたよ",fact:"いちどに ほんの数こしか つくれない めずらしい げんそだよ"},
+ {num:102,symbol:"No",name:"ノーベリウム", yomi:"のーべりうむ",   cat:"actinide", period:10,group:17,emoji:"🔬",tier:"high",clue:"ノーベルしょうの ノーベルの 名前から つけられたよ",fact:"とても つくるのが むずかしい げんそだよ"},
+ {num:103,symbol:"Lr",name:"ローレンシウム",yomi:"ろーれんしうむ", cat:"actinide", period:10,group:18,emoji:"🔬",tier:"high",clue:"かそくきを つくった ローレンスの 名前から つけられたよ",fact:"アクチノイドの なかまの さいごの げんそだよ"}
+];
+
+const ELEMENTS = [...EASY_ELEMENTS, ...MEDIUM_ELEMENTS, ...HIGH_ELEMENTS];
+const BY_SYMBOL = {}; ELEMENTS.forEach(e=>BY_SYMBOL[e.symbol]=e);
+const TIER_LABEL = { easy:"身近", medium:"中級", high:"レア" };
+const TIER_ORDER = ["easy","medium","high"];
+function tierTotal(tier){ return ELEMENTS.filter(e=>e.tier===tier).length; }
+function tierUnlockedCount(tier){ return ELEMENTS.filter(e=>e.tier===tier && save.unlocked[e.symbol]).length; }
+function isTierUnlocked(tier){
+  if(tier==="easy") return true;
+  if(tier==="medium") return tierUnlockedCount("easy") >= tierTotal("easy");
+  if(tier==="high") return tierUnlockedCount("medium") >= tierTotal("medium");
+  return false;
+}
+
+/* ===================== げんそをくっつけると?(化合物クイズ) ===================== */
+const COMPOUNDS = [
+ {id:"h2o",    a:"H", b:"O", result:"水",           yomi:"みず",           note:"H₂O",   emoji:"💧", type:"compound", fact:"わたしたちの体の半分いじょうが 水でできているよ"},
+ {id:"nacl",   a:"Na",b:"Cl",result:"塩",           yomi:"しお",           note:"NaCl",  emoji:"🧂", type:"compound", fact:"海の水にも たくさん とけているよ"},
+ {id:"kcl",    a:"K", b:"Cl",result:"塩化カリウム", yomi:"えんかかりうむ", note:"KCl",   emoji:"🌱", type:"compound", fact:"植物の ひりょうに つかわれることがあるよ"},
+ {id:"co2",    a:"C", b:"O", result:"二酸化炭素",   yomi:"にさんかたんそ", note:"CO₂",   emoji:"💨", type:"compound", fact:"わたしたちが はく いきにも ふくまれているよ"},
+ {id:"rust",   a:"Fe",b:"O", result:"さび",         yomi:"さび",           note:"酸化鉄", emoji:"🔩", type:"compound", fact:"鉄が 水や空気にふれると 赤くさびるんだよ"},
+ {id:"nh3",    a:"N", b:"H", result:"アンモニア",   yomi:"あんもにあ",     note:"NH₃",   emoji:"👃", type:"compound", fact:"つーんとした においの気体だよ、そうじにも つかわれるよ"},
+ {id:"glass",  a:"Si",b:"O", result:"ガラス",       yomi:"がらす",         note:"二酸化ケイ素", emoji:"🪟", type:"compound", fact:"すなの 主な成分でも あるよ"},
+ {id:"patina", a:"Cu",b:"O", result:"緑青",         yomi:"ろくしょう",     note:"酸化銅", emoji:"🗿", type:"compound", fact:"銅ぞうが 青緑色に なるのは これのせいだよ"},
+ {id:"lime",   a:"Ca",b:"O", result:"石灰",         yomi:"せっかい",       note:"酸化カルシウム", emoji:"🐚", type:"compound", fact:"貝がらや チョークにも かんけいが あるよ"},
+ {id:"mgo",    a:"Mg",b:"O", result:"酸化マグネシウム", yomi:"さんかまぐねしうむ", note:"MgO", emoji:"💊", type:"compound", fact:"胃ぐすりに つかわれることがあるよ"},
+ {id:"almina", a:"Al",b:"O", result:"アルミナ",     yomi:"あるみな",       note:"酸化アルミニウム", emoji:"💍", type:"compound", fact:"ルビーや サファイアの もとになる 成分でもあるよ"},
+ {id:"hcl",    a:"H", b:"Cl",result:"塩酸",         yomi:"えんさん",       note:"HCl",   emoji:"⚗️", type:"compound", fact:"じつは わたしたちの 胃の中にもある 強い酸だよ"},
+ {id:"h2s",    a:"H", b:"S", result:"硫化水素",     yomi:"りゅうかすいそ", note:"H₂S",   emoji:"🥚", type:"compound", fact:"くさった たまごのような においの もとだよ"},
+ {id:"no2",    a:"N", b:"O", result:"二酸化窒素",   yomi:"にさんかちっそ", note:"NO₂",   emoji:"🚗", type:"compound", fact:"車の けむりに ふくまれる気体で、すいすぎると 体によくないよ"},
+ {id:"so2",    a:"S", b:"O", result:"二酸化硫黄",   yomi:"にさんかいおう", note:"SO₂",   emoji:"🌧️", type:"compound", fact:"多くなると 酸性雨の げんいんに なることがあるよ"},
+ {id:"caphos", a:"Ca",b:"P", result:"リン酸カルシウム", yomi:"りんさんかるしうむ", note:"Ca₃(PO₄)₂", emoji:"🦴", type:"compound", fact:"じつは わたしたちの ほねや 歯の 主な成分だよ"},
+ {id:"nigari", a:"Mg",b:"Cl",result:"にがり",       yomi:"にがり",         note:"塩化マグネシウム", emoji:"🧊", type:"compound", fact:"とうふを かためる ときに つかわれるよ"},
+ {id:"brass",  a:"Cu",b:"Zn",result:"真鍮",         yomi:"しんちゅう",     note:"合金",  emoji:"🚪", type:"alloy", fact:"ドアノブや トランペットにも つかわれる金ぞくだよ"},
+ {id:"steel",  a:"Fe",b:"C", result:"鋼",           yomi:"はがね",         note:"合金",  emoji:"🔪", type:"alloy", fact:"ナイフや ビルなど、じょうぶさが ひつような ものに つかわれるよ"},
+ {id:"whitegold", a:"Au",b:"Ag",result:"合金の金", yomi:"ごうきんのきん", note:"合金",  emoji:"💍", type:"alloy", fact:"金と銀を まぜると 白っぽい色の 金になるよ"},
+ {id:"noble1", a:"He",b:"Ne",result:"反応しない",   yomi:"はんのうしない", note:"貴ガス", emoji:"🚫", type:"trivia", fact:"貴ガスどうしは とても あんていしているから ほとんど くっつかないんだよ"},
+ {id:"noble2", a:"Ne",b:"Ar",result:"反応しない",   yomi:"はんのうしない", note:"貴ガス", emoji:"🚫", type:"trivia", fact:"ネオンも アルゴンも 貴ガスの なかまだから やっぱり くっつかないよ"}
+];
+const COMBO_COLOR = { compound:"#5fb894", alloy:"#e0ac3f", trivia:"#a98fd6" };
+
+
+/* ===================== 周期表 全118マス(位置と記号のみ) ===================== */
+const FULL_TABLE = [
+ [1,1,"H"],[1,18,"He"],
+ [2,1,"Li"],[2,2,"Be"],[2,13,"B"],[2,14,"C"],[2,15,"N"],[2,16,"O"],[2,17,"F"],[2,18,"Ne"],
+ [3,1,"Na"],[3,2,"Mg"],[3,13,"Al"],[3,14,"Si"],[3,15,"P"],[3,16,"S"],[3,17,"Cl"],[3,18,"Ar"],
+ [4,1,"K"],[4,2,"Ca"],[4,3,"Sc"],[4,4,"Ti"],[4,5,"V"],[4,6,"Cr"],[4,7,"Mn"],[4,8,"Fe"],[4,9,"Co"],[4,10,"Ni"],[4,11,"Cu"],[4,12,"Zn"],[4,13,"Ga"],[4,14,"Ge"],[4,15,"As"],[4,16,"Se"],[4,17,"Br"],[4,18,"Kr"],
+ [5,1,"Rb"],[5,2,"Sr"],[5,3,"Y"],[5,4,"Zr"],[5,5,"Nb"],[5,6,"Mo"],[5,7,"Tc"],[5,8,"Ru"],[5,9,"Rh"],[5,10,"Pd"],[5,11,"Ag"],[5,12,"Cd"],[5,13,"In"],[5,14,"Sn"],[5,15,"Sb"],[5,16,"Te"],[5,17,"I"],[5,18,"Xe"],
+ [6,1,"Cs"],[6,2,"Ba"],[6,4,"Hf"],[6,5,"Ta"],[6,6,"W"],[6,7,"Re"],[6,8,"Os"],[6,9,"Ir"],[6,10,"Pt"],[6,11,"Au"],[6,12,"Hg"],[6,13,"Tl"],[6,14,"Pb"],[6,15,"Bi"],[6,16,"Po"],[6,17,"At"],[6,18,"Rn"],
+ [7,1,"Fr"],[7,2,"Ra"],[7,4,"Rf"],[7,5,"Db"],[7,6,"Sg"],[7,7,"Bh"],[7,8,"Hs"],[7,9,"Mt"],[7,10,"Ds"],[7,11,"Rg"],[7,12,"Cn"],[7,13,"Nh"],[7,14,"Fl"],[7,15,"Mc"],[7,16,"Lv"],[7,17,"Ts"],[7,18,"Og"],
+ [9,4,"La"],[9,5,"Ce"],[9,6,"Pr"],[9,7,"Nd"],[9,8,"Pm"],[9,9,"Sm"],[9,10,"Eu"],[9,11,"Gd"],[9,12,"Tb"],[9,13,"Dy"],[9,14,"Ho"],[9,15,"Er"],[9,16,"Tm"],[9,17,"Yb"],[9,18,"Lu"],
+ [10,4,"Ac"],[10,5,"Th"],[10,6,"Pa"],[10,7,"U"],[10,8,"Np"],[10,9,"Pu"],[10,10,"Am"],[10,11,"Cm"],[10,12,"Bk"],[10,13,"Cf"],[10,14,"Es"],[10,15,"Fm"],[10,16,"Md"],[10,17,"No"],[10,18,"Lr"]
+];
+const METALLOIDS=["B","Si","Ge","As","Sb","Te","Po"];
+const NONMETALS=["H","C","N","O","P","S","Se"];
+const HALOGENS=["F","Cl","Br","I","At","Ts"];
+const NOBLES=["He","Ne","Ar","Kr","Xe","Rn","Og"];
+const ALKALIS=["Li","Na","K","Rb","Cs","Fr"];
+const ALKALINES=["Be","Mg","Ca","Sr","Ba","Ra"];
+const POST_TRANS=["Al","Ga","In","Sn","Tl","Pb","Bi","Nh","Fl","Mc","Lv"];
+function computeCategory(symbol, period, group){
+  if(METALLOIDS.includes(symbol)) return "metalloid";
+  if(NONMETALS.includes(symbol)) return "nonmetal";
+  if(HALOGENS.includes(symbol)) return "halogen";
+  if(NOBLES.includes(symbol)) return "noble";
+  if(ALKALIS.includes(symbol)) return "alkali";
+  if(ALKALINES.includes(symbol)) return "alkaline";
+  if(period===9) return "lanthanide";
+  if(period===10) return "actinide";
+  if(group>=3 && group<=12) return "transition";
+  if(POST_TRANS.includes(symbol)) return "other";
+  return "other";
+}
+const DEX_ALL = FULL_TABLE.map(([period,group,symbol])=>{
+  const known = BY_SYMBOL[symbol];
+  return {
+    symbol, period, group,
+    quizzable: !!known,
+    cat: known ? known.cat : computeCategory(symbol, period, group)
+  };
+});
+
+const CAT_COLOR = {
+  alkali:"#ff8787", alkaline:"#ffb86b", nonmetal:"#48d1a3", halogen:"#a9de55",
+  noble:"#b39ddb", metalloid:"#4fc3d9", other:"#c9cfd8",
+  transition:"#7f9db9", lanthanide:"#f2a6c9", actinide:"#c98fd1",
+  Fe:"#8d99ae", Cu:"#d9822b", Zn:"#8fa393", Ag:"#b9c3c9", Au:"#e8c15c", Hg:"#9aa3ac", Pb:"#6b7480"
+};
+function colorFor(entry){ return CAT_COLOR[entry.symbol] || CAT_COLOR[entry.cat] || "#c9cfd8"; }
+
+/* ===================== セーブ ===================== */
+const SAVE_KEY = "genso-lab-save";
+let save = { unlocked:{}, bestStreak:0, compoundsFound:{} };
+
+// claude.aiのアーティファクト内では window.storage を、
+// 外部サイト(GitHub Pagesなど)にホスティングした場合は localStorage を使う
+const hasArtifactStorage = (typeof window!=="undefined" && !!window.storage);
+async function storageGet(key){
+  if(hasArtifactStorage){
+    try{ return await window.storage.get(key,false); }catch(e){ return null; }
+  }
+  try{
+    const v = localStorage.getItem(key);
+    return v!==null ? {value:v} : null;
+  }catch(e){ return null; }
+}
+async function storageSet(key,value){
+  if(hasArtifactStorage){
+    try{ return await window.storage.set(key,value,false); }catch(e){ return null; }
+  }
+  try{ localStorage.setItem(key,value); return {value}; }catch(e){ return null; }
+}
+
+async function loadSave(){
+  try{ const r = await storageGet(SAVE_KEY); if(r&&r.value) save = JSON.parse(r.value); }
+  catch(e){ /* 初回 */ }
+  if(!save.compoundsFound) save.compoundsFound = {};
+}
+function compoundFoundCount(){ return Object.keys(save.compoundsFound).filter(k=>save.compoundsFound[k]).length; }
+let saveTimer=null;
+function persist(){
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(async ()=>{
+    await storageSet(SAVE_KEY, JSON.stringify(save));
+  },300);
+}
+function unlockedCount(){ return Object.keys(save.unlocked).filter(k=>save.unlocked[k]).length; }
+
+/* ===================== 状態 ===================== */
+let state = "loading";
+let selectedCell = null;
+let cur = null;
+let curChoices = [];
+let streak = 0;
+let answered = false;
+let pickedSymbol = null;
+let lastAsked = [];
+let curCompound = null;
+let curComboChoices = [];
+let lastAskedCompound = [];
+let comboAnswered = false;
+let comboPicked = null;
+let comboStreak = 0;
+
+function pickTargetElement(){
+  const availableTiers = TIER_ORDER.filter(t=>isTierUnlocked(t));
+  const pool = ELEMENTS.filter(e=>availableTiers.includes(e.tier));
+  let remaining = pool.filter(e=>!save.unlocked[e.symbol]);
+  if(remaining.length===0){
+    const revPool = ELEMENTS.filter(e=>!lastAsked.includes(e.symbol));
+    const src = revPool.length ? revPool : ELEMENTS;
+    return src[Math.floor(Math.random()*src.length)];
+  }
+  remaining.sort((a,b)=>a.num-b.num);
+  const notRecent = remaining.filter(e=>!lastAsked.includes(e.symbol));
+  return (notRecent.length ? notRecent : remaining)[0];
+}
+
+function shuffledDistractors(correctSymbol, n, tier){
+  let pool = ELEMENTS.filter(e=>e.symbol!==correctSymbol && e.tier===tier);
+  if(pool.length < n){
+    pool = ELEMENTS.filter(e=>e.symbol!==correctSymbol);
+  }
+  pool = pool.slice();
+  for(let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]]; }
+  return pool.slice(0,n);
+}
+
+function newQuestion(){
+  cur = pickTargetElement();
+  lastAsked.push(cur.symbol);
+  if(lastAsked.length>3) lastAsked.shift();
+  const distractors = shuffledDistractors(cur.symbol, 3, cur.tier);
+  curChoices = [cur, ...distractors];
+  for(let i=curChoices.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [curChoices[i],curChoices[j]]=[curChoices[j],curChoices[i]]; }
+  answered = false;
+  pickedSymbol = null;
+  render();
+}
+
+function answerQuiz(symbol){
+  if(answered) return;
+  answered = true;
+  pickedSymbol = symbol;
+  const correct = symbol === cur.symbol;
+  if(correct){
+    streak++;
+    save.bestStreak = Math.max(save.bestStreak, streak);
+    save.unlocked[cur.symbol] = true;
+    persist();
+  } else {
+    streak = 0;
+  }
+  render();
+}
+
+function pickTargetCompound(){
+  let remaining = COMPOUNDS.filter(c=>!save.compoundsFound[c.id]);
+  if(remaining.length===0){
+    const pool = COMPOUNDS.filter(c=>!lastAskedCompound.includes(c.id));
+    const src = pool.length ? pool : COMPOUNDS;
+    return src[Math.floor(Math.random()*src.length)];
+  }
+  const notRecent = remaining.filter(c=>!lastAskedCompound.includes(c.id));
+  return (notRecent.length ? notRecent : remaining)[0];
+}
+
+function newCompoundQuestion(){
+  curCompound = pickTargetCompound();
+  lastAskedCompound.push(curCompound.id);
+  if(lastAskedCompound.length>3) lastAskedCompound.shift();
+  const distractorPool = COMPOUNDS.filter(c=>c.id!==curCompound.id).slice();
+  for(let i=distractorPool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [distractorPool[i],distractorPool[j]]=[distractorPool[j],distractorPool[i]]; }
+  curComboChoices = [curCompound, ...distractorPool.slice(0,3)];
+  for(let i=curComboChoices.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [curComboChoices[i],curComboChoices[j]]=[curComboChoices[j],curComboChoices[i]]; }
+  comboAnswered = false;
+  comboPicked = null;
+  render();
+}
+
+function answerCompoundQuiz(id){
+  if(comboAnswered) return;
+  comboAnswered = true;
+  comboPicked = id;
+  const correct = id === curCompound.id;
+  if(correct){
+    comboStreak++;
+    save.compoundsFound[curCompound.id] = true;
+    persist();
+  } else {
+    comboStreak = 0;
+  }
+  render();
+}
+
+/* ===================== 描画 ===================== */
+function render(){
+  const app = document.getElementById("app");
+
+  if(state==="loading"){
+    app.innerHTML = `<div class="card" style="text-align:center;">ラボの電気をつけています…🔬</div>`;
+    return;
+  }
+
+  if(state==="title"){
+    app.innerHTML = `
+      <div class="card">
+        <div class="lab-emoji">🧪</div>
+        <h1 class="title">げんそ発見ラボ</h1>
+        <div class="subtitle">身の回りのものは、げんそという「材料」でできている</div>
+        <div class="progress-chip">🧬 コレクション ${unlockedCount()} / ${ELEMENTS.length}</div>
+        <div class="tier-row">
+          ${TIER_ORDER.map(t=>{
+            const unlocked = isTierUnlocked(t);
+            const cnt = tierUnlockedCount(t); const tot = tierTotal(t);
+            const cls = "tier-chip " + t + (unlocked?"":" locked");
+            return `<div class="${cls}">${unlocked? (t==="high"?"✨":"") : "🔒"} ${TIER_LABEL[t]} ${cnt}/${tot}</div>`;
+          }).join("")}
+        </div>
+        <button class="mode-btn teal" id="btnObj">
+          <div class="emo">🔍</div>
+          <div class="txt"><b>これは何でできている？</b><span>みぢかなものから げんそ記号をあてる</span></div>
+        </button>
+        <button class="mode-btn coral" id="btnDex">
+          <div class="emo">🧬</div>
+          <div class="txt"><b>げんそクイズに挑戦</b><span>記号を見て 名前をあてて図鑑をうめる</span></div>
+        </button>
+        <button class="mode-btn gold" id="btnCombo">
+          <div class="emo">🧪</div>
+          <div class="txt"><b>くっつけると何になる？</b><span>げんそ2つを合体させて できるものをあてる(${compoundFoundCount()}/${COMPOUNDS.length})</span></div>
+        </button>
+        <button class="mode-btn gold" id="btnShowDex">
+          <div class="emo">📖</div>
+          <div class="txt"><b>ずかんを見る</b><span>本物とおなじ周期表の形で かくにんする</span></div>
+        </button>
+      </div>
+    `;
+    document.getElementById("btnObj").onclick = ()=>{ state="quizObject"; streak=0; newQuestion(); };
+    document.getElementById("btnDex").onclick = ()=>{ state="quizDex"; streak=0; newQuestion(); };
+    document.getElementById("btnCombo").onclick = ()=>{ state="quizCombo"; comboStreak=0; newCompoundQuestion(); };
+    document.getElementById("btnShowDex").onclick = ()=>{ state="dex"; selectedCell=null; render(); };
+    return;
+  }
+
+  if(state==="dex"){
+    const cells = DEX_ALL.map(e=>{
+      const unlocked = e.quizzable && !!save.unlocked[e.symbol];
+      let cls = "cell";
+      let style = "";
+      if(unlocked){
+        style = `background:${colorFor(e)};`;
+        const full = BY_SYMBOL[e.symbol];
+        if(full && full.tier==="high") cls += " rare-unlocked";
+      }
+      else if(e.quizzable){ cls += " locked"; }
+      else{ cls += " locked future"; }
+      const sel = (selectedCell && selectedCell.symbol===e.symbol) ? " selected" : "";
+      return `<div class="${cls}${sel}" style="grid-column:${e.group}; grid-row:${e.period}; ${style}" data-symbol="${e.symbol}">${unlocked?e.symbol:''}</div>`;
+    }).join("");
+
+    let detailHtml = `<div class="detail-empty">マスをタップすると くわしく見られるよ</div>`;
+    if(selectedCell){
+      const dexInfo = DEX_ALL.find(x=>x.symbol===selectedCell.symbol);
+      const full = BY_SYMBOL[selectedCell.symbol];
+      const isUnlocked = dexInfo.quizzable && !!save.unlocked[selectedCell.symbol];
+      if(isUnlocked && full){
+        detailHtml = `
+          <div class="detail-panel">
+            <div class="demo">${full.emoji}</div>
+            <div class="txt">
+              <b>${full.name}(${full.symbol})</b>
+              <div class="yomi">よみかた: ${full.yomi}</div>
+              <div class="fact">${full.fact}</div>
+            </div>
+          </div>`;
+      } else if(dexInfo.quizzable){
+        detailHtml = `
+          <div class="detail-panel">
+            <div class="demo">🔒</div>
+            <div class="txt"><b>${selectedCell.symbol}</b><div class="yomi">クイズで正解すると 見えるようになるよ</div></div>
+          </div>`;
+      } else {
+        detailHtml = `
+          <div class="detail-panel future">
+            <div class="demo">🚧</div>
+            <div class="txt"><b>${selectedCell.symbol}</b><div class="yomi">まだクイズに でていないよ。そのうち ふえるかも!</div></div>
+          </div>`;
+      }
+    }
+
+    app.innerHTML = `
+      <div class="card">
+        <h1 class="title" style="font-size:26px;">げんそ図鑑</h1>
+        <div class="progress-chip">🧬 コレクション ${unlockedCount()} / ${ELEMENTS.length}</div>
+        <div class="tier-row">
+          ${TIER_ORDER.map(t=>{
+            const unlocked = isTierUnlocked(t);
+            const cnt = tierUnlockedCount(t); const tot = tierTotal(t);
+            const cls = "tier-chip " + t + (unlocked?"":" locked");
+            return `<div class="${cls}">${unlocked? (t==="high"?"✨":"") : "🔒"} ${TIER_LABEL[t]} ${cnt}/${tot}</div>`;
+          }).join("")}
+        </div>
+        <div class="dex-wrap"><div class="dex-grid">${cells}</div></div>
+        ${detailHtml}
+        <div class="legend">
+          <span><i style="background:${CAT_COLOR.alkali}"></i>アルカリ金属</span>
+          <span><i style="background:${CAT_COLOR.alkaline}"></i>アルカリ土類</span>
+          <span><i style="background:${CAT_COLOR.transition}"></i>遷移金属</span>
+          <span><i style="background:${CAT_COLOR.other}"></i>その他金属</span>
+          <span><i style="background:${CAT_COLOR.metalloid}"></i>半金属</span>
+          <span><i style="background:${CAT_COLOR.nonmetal}"></i>非金属</span>
+          <span><i style="background:${CAT_COLOR.halogen}"></i>ハロゲン</span>
+          <span><i style="background:${CAT_COLOR.noble}"></i>貴ガス</span>
+          <span><i style="background:${CAT_COLOR.lanthanide}"></i>ランタノイド</span>
+          <span><i style="background:${CAT_COLOR.actinide}"></i>アクチノイド</span>
+        </div>
+
+        <h1 class="title" style="font-size:20px;margin-top:22px;">くっつけ図鑑</h1>
+        <div class="progress-chip">🧪 コレクション ${compoundFoundCount()} / ${COMPOUNDS.length}</div>
+        <div class="combo-dex">
+          ${COMPOUNDS.map(c=>{
+            const unlocked = !!save.compoundsFound[c.id];
+            const style = unlocked ? `background:${COMBO_COLOR[c.type]};color:#fff;` : "";
+            const cls = unlocked ? "combo-cell" : "combo-cell locked";
+            return `<div class="${cls}" style="${style}" data-cid="${c.id}">${unlocked ? c.emoji : '❓'}</div>`;
+          }).join("")}
+        </div>
+        <div class="detail-empty" id="comboDetail" style="margin-top:8px;">マスをタップすると くわしく見られるよ</div>
+        <div class="legend">
+          <span><i style="background:${COMBO_COLOR.compound}"></i>化合物</span>
+          <span><i style="background:${COMBO_COLOR.alloy}"></i>合金</span>
+          <span><i style="background:${COMBO_COLOR.trivia}"></i>とくべつ</span>
+        </div>
+
+        <button class="btn-primary" id="toQuiz">クイズをつづける</button>
+        <button class="btn-ghost" id="toTitle">タイトルにもどる</button>
+      </div>
+    `;
+    document.querySelectorAll(".cell").forEach(c=>{
+      c.onclick = ()=>{ selectedCell = DEX_ALL.find(x=>x.symbol===c.dataset.symbol); render(); };
+    });
+    document.querySelectorAll(".combo-cell").forEach(c=>{
+      c.onclick = ()=>{
+        const comp = COMPOUNDS.find(x=>x.id===c.dataset.cid);
+        const unlocked = !!save.compoundsFound[comp.id];
+        const box = document.getElementById("comboDetail");
+        if(unlocked){
+          box.innerHTML = `<div class="detail-panel"><div class="demo">${comp.emoji}</div><div class="txt"><b>${comp.result}(${comp.yomi})</b><div class="yomi">${comp.note}</div><div class="fact">${comp.fact}</div></div></div>`;
+        } else {
+          box.innerHTML = `<div class="detail-panel"><div class="demo">🔒</div><div class="txt"><b>？？？</b><div class="yomi">クイズで正解すると 見えるようになるよ</div></div></div>`;
+        }
+      };
+    });
+    document.getElementById("toQuiz").onclick = ()=>{ state="quizDex"; streak=0; newQuestion(); };
+    document.getElementById("toTitle").onclick = ()=>{ state="title"; render(); };
+    return;
+  }
+
+  if(state==="quizObject" || state==="quizDex"){
+    const isObjectMode = state==="quizObject";
+    const promptHtml = isObjectMode
+      ? `<div class="prompt-emoji">${cur.emoji}</div><div class="prompt-clue">${cur.clue}</div><div class="prompt-clue" style="margin-top:8px;color:var(--ink-soft);font-size:12px;">これは何のげんそ？</div>`
+      : `<div class="prompt-emoji">${cur.emoji}</div><div class="prompt-symbol">${cur.symbol}</div><div class="prompt-clue" style="font-size:12px;color:var(--ink-soft);">この記号の名前は？</div>`;
+    const promptBoxCls = cur.tier==="high" ? "prompt-box rare" : "prompt-box";
+    const badgeHtml = cur.tier==="high" ? `<div class="rare-badge">✨ レア元素!</div>` : (cur.tier==="medium" ? `<div class="medium-badge">★ 中級</div>` : "");
+
+    const choicesHtml = curChoices.map(c=>{
+      const label = isObjectMode
+        ? `<span class="csym">${c.symbol}</span><span class="cname">${c.name}(${c.yomi})</span>`
+        : `<span class="cname" style="font-size:15px;color:var(--ink);">${c.name}</span><span class="cname">${c.yomi}</span>`;
+      let cls = "choice-btn";
+      if(answered){
+        if(c.symbol===cur.symbol) cls += " correct";
+        else if(c.symbol===pickedSymbol) cls += " wrong";
+      }
+      return `<button class="${cls}" data-symbol="${c.symbol}" ${answered?"disabled":""}>${label}</button>`;
+    }).join("");
+
+    const wasCorrect = answered && pickedSymbol===cur.symbol;
+    const factBoxHtml = answered ? `
+      <div class="fact-reveal show ${wasCorrect?'':'wrongbox'}">
+        <b>${wasCorrect ? "せいかい!" : "おしい!"} ${cur.name}(${cur.symbol})・${cur.yomi}</b><br>${cur.fact}
+      </div>` : `<div class="fact-reveal"></div>`;
+
+    app.innerHTML = `
+      <div class="card">
+        <div class="quiz-top">
+          <span>${isObjectMode ? "🔍 これは何でできている？" : "🧬 げんそクイズ"}</span>
+          <span class="streak">${streak>0 ? streak+"問 連続正解中!" : ""}</span>
+        </div>
+        <div class="${promptBoxCls}">${badgeHtml}${promptHtml}</div>
+        <div class="choices">${choicesHtml}</div>
+        ${factBoxHtml}
+        ${answered ? `<button class="btn-primary" id="nextQ">つぎのもんだいへ →</button>` : ""}
+        <button class="btn-ghost" id="toTitle2">タイトル / 図鑑にもどる</button>
+      </div>
+    `;
+    document.querySelectorAll(".choice-btn").forEach(b=>{
+      b.onclick = ()=>{ if(!answered) answerQuiz(b.dataset.symbol); };
+    });
+    const nextBtn = document.getElementById("nextQ");
+    if(nextBtn) nextBtn.onclick = ()=> newQuestion();
+    document.getElementById("toTitle2").onclick = ()=>{ state="title"; render(); };
+    return;
+  }
+
+  if(state==="quizCombo"){
+    const ea = BY_SYMBOL[curCompound.a];
+    const eb = BY_SYMBOL[curCompound.b];
+    const promptHtml = `
+      <div class="combo-row">
+        <div class="combo-chip"><span class="ce">${ea.emoji}</span><span class="cs">${ea.symbol}</span><span class="cn">${ea.name}(${ea.yomi})</span></div>
+        <span class="combo-op">+</span>
+        <div class="combo-chip"><span class="ce">${eb.emoji}</span><span class="cs">${eb.symbol}</span><span class="cn">${eb.name}(${eb.yomi})</span></div>
+        <span class="combo-op">=</span>
+        <div class="combo-chip"><span class="ce">${comboAnswered ? "✨" : "❓"}</span><span class="cs">?</span></div>
+      </div>
+      <div class="prompt-clue" style="margin-top:10px;font-size:12px;color:var(--ink-soft);">くっつけると何になる？</div>
+    `;
+    const choicesHtml = curComboChoices.map(c=>{
+      let cls = "choice-btn";
+      if(comboAnswered){
+        if(c.id===curCompound.id) cls += " correct";
+        else if(c.id===comboPicked) cls += " wrong";
+      }
+      return `<button class="${cls}" data-id="${c.id}" ${comboAnswered?"disabled":""}>
+        <span class="cname" style="font-size:15px;color:var(--ink);">${c.result}</span>
+        <span class="cname">${c.yomi}</span>
+      </button>`;
+    }).join("");
+
+    const wasCorrect = comboAnswered && comboPicked===curCompound.id;
+    const factBoxHtml = comboAnswered ? `
+      <div class="fact-reveal show ${wasCorrect?'':'wrongbox'}">
+        <b>${wasCorrect ? "せいかい!" : "おしい!"} ${curCompound.result}(${curCompound.yomi}) <span style="font-weight:400;">${curCompound.note}</span></b><br>${curCompound.fact}
+      </div>` : `<div class="fact-reveal"></div>`;
+
+    app.innerHTML = `
+      <div class="card">
+        <div class="quiz-top">
+          <span>🧪 くっつけると何になる？</span>
+          <span class="streak">${comboStreak>0 ? comboStreak+"問 連続正解中!" : ""}</span>
+        </div>
+        <div class="prompt-box">${promptHtml}</div>
+        <div class="choices">${choicesHtml}</div>
+        ${factBoxHtml}
+        ${comboAnswered ? `<button class="btn-primary" id="nextCombo">つぎのもんだいへ →</button>` : ""}
+        <button class="btn-ghost" id="toTitle3">タイトルにもどる</button>
+      </div>
+    `;
+    document.querySelectorAll(".choice-btn").forEach(b=>{
+      b.onclick = ()=>{ if(!comboAnswered) answerCompoundQuiz(b.dataset.id); };
+    });
+    const nextComboBtn = document.getElementById("nextCombo");
+    if(nextComboBtn) nextComboBtn.onclick = ()=> newCompoundQuestion();
+    document.getElementById("toTitle3").onclick = ()=>{ state="title"; render(); };
+    return;
+  }
+}
+
+(async ()=>{
+  await loadSave();
+  state = "title";
+  render();
+})();
+</script>
+</body>
+</html>
