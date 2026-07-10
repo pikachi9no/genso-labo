@@ -164,25 +164,76 @@ button{ font-family: var(--font-ui); cursor:pointer; border:none; }
 }
 .streak{ font-weight:700; color: var(--coral-dark); }
 
-/* ---------- compound quiz ---------- */
-.combo-row{ display:flex; align-items:center; justify-content:center; gap: clamp(10px,1.3vw,16px); flex-wrap:wrap; }
-.combo-chip{
-  background:#fff; border:2px solid var(--line); border-radius:14px;
-  padding: clamp(10px,1.4vw,16px) clamp(14px,1.8vw,20px); text-align:center; min-width:76px;
+/* ---------- バッジ・称号 ---------- */
+.badge-row{ display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin: 0 0 14px; }
+.player-badge{
+  background: linear-gradient(120deg,#fff6e0,#fdeefb); border: 1.5px solid var(--gold);
+  border-radius: 999px; padding: 7px 14px; font-size: clamp(11.5px,1.3vw,13.5px); font-weight:700; color: var(--ink);
 }
-.combo-chip .ce{ font-size: clamp(26px,3.2vw,36px); display:block; }
-.combo-chip .cs{ font-family: var(--font-display); font-size: clamp(20px,2.4vw,26px); color: var(--teal-dark); display:block; }
-.combo-chip .cn{ font-size: clamp(10.5px,1.2vw,13px); color: var(--ink-soft); }
-.combo-op{ font-family: var(--font-display); font-size: clamp(26px,3vw,34px); color: var(--ink-soft); }
 
-.combo-dex{ display:flex; flex-wrap:wrap; gap: clamp(6px,0.8vw,10px); margin-top:4px; }
-.combo-cell{
-  width: clamp(44px,5vw,56px); height: clamp(44px,5vw,56px); border-radius:10px;
-  display:flex; align-items:center; justify-content:center;
-  font-size: clamp(20px,2.4vw,26px); cursor:pointer;
-  background:#dfe3ea; box-shadow: inset 0 -2px 0 rgba(0,0,0,0.12);
+/* ---------- ボス戦・タイムアタック ボタン ---------- */
+.mode-btn.boss{ border-color:#c0524a; background: linear-gradient(135deg,#fff,#fdeeec); }
+.mode-btn.ta{ border-color:#4f9dd6; background: linear-gradient(135deg,#fff,#eaf4fb); }
+
+/* ---------- ライフ表示 ---------- */
+.lives{ font-size:18px; display:flex; gap:3px; }
+.life-lost{ opacity:0.25; filter:grayscale(1); }
+
+/* ---------- ボスHPバー ---------- */
+.boss-hp-track{
+  height:16px; border-radius:10px; background: rgba(0,0,0,0.12); overflow:hidden; margin: 10px 0 4px;
+  border: 2px solid rgba(0,0,0,0.08);
 }
-.combo-cell.locked{ color:#a9b1c0; }
+.boss-hp-fill{
+  height:100%; background: linear-gradient(90deg,#ff8fb0,#c0524a); border-radius:10px;
+  transition: width .4s ease;
+}
+.boss-hp-label{ text-align:center; font-size:12px; color: var(--ink-soft); margin-bottom:14px; font-weight:700; }
+
+/* ---------- 結果画面(共通) ---------- */
+.result-emoji{ font-size: clamp(48px,7vw,66px); text-align:center; margin-bottom:6px; }
+.result-title{ font-family: var(--font-display); font-size: clamp(24px,3vw,30px); text-align:center; color: var(--teal-dark); margin: 0 0 16px; }
+.new-record{ text-align:center; color: var(--coral-dark); font-weight:900; margin: 10px 0; }
+
+/* ---------- タイムアタック ランク表示 ---------- */
+.rank-reveal{
+  text-align:center; border: 3px solid var(--gold); border-radius:16px; padding: 20px 10px; margin-bottom:12px;
+  background: linear-gradient(180deg,#fff,#fbf6e8);
+}
+.rank-icon{ font-size: clamp(50px,7vw,70px); }
+.rank-label{ font-family: var(--font-display); font-size: clamp(24px,3vw,30px); font-weight:900; margin-top:4px; }
+.rank-score{ font-size: clamp(13px,1.5vw,16px); color: var(--ink-soft); margin-top:4px; }
+
+/* ---------- ボス一覧(ラダー) ---------- */
+.boss-list{ display:flex; flex-direction:column; gap:8px; margin-bottom:10px; }
+.boss-list-item{
+  display:flex; align-items:center; gap:12px; width:100%;
+  background:#fff; border:2px solid var(--line); border-radius:14px; padding:10px 14px; text-align:left;
+  font-family: var(--font-ui);
+}
+.boss-list-item.cleared{ border-color: var(--teal); background: #eef8f4; }
+.boss-list-item.locked{ opacity:0.55; }
+.boss-list-emoji{ font-size:28px; }
+.boss-list-txt{ display:flex; flex-direction:column; flex:1; }
+.boss-list-txt b{ font-size:14.5px; color: var(--ink); }
+.boss-list-txt span{ font-size:11.5px; color: var(--ink-soft); }
+.boss-cleared-mark{ font-size:18px; }
+
+/* ---------- ボス戦バナー ---------- */
+.boss-banner{ display:flex; align-items:center; gap:14px; margin-bottom:6px; }
+.boss-portrait{ font-size: clamp(52px,7vw,72px); transition: transform .15s; animation: bossBreathe 2.2s ease-in-out infinite; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.25)); }
+.boss-portrait.boss-hit{ animation: bossHitShake 0.4s ease; }
+@keyframes bossBreathe{
+  0%,100%{ transform: scale(1); }
+  50%{ transform: scale(1.06); }
+}
+@keyframes bossHitShake{
+  0%,100%{ transform: translateX(0) scale(1); }
+  25%{ transform: translateX(-6px) scale(0.95); }
+  50%{ transform: translateX(6px) scale(1.05); }
+  75%{ transform: translateX(-3px) scale(0.98); }
+}
+.boss-hp-wrap{ flex:1; }
 
 /* ---------- tier progress & rarity ---------- */
 .tier-row{ display:flex; gap:6px; justify-content:center; margin: 0 0 16px; flex-wrap:wrap; }
@@ -500,34 +551,6 @@ function makeSparkles(n){
   return html;
 }
 
-/* ===================== げんそをくっつけると?(化合物クイズ) ===================== */
-const COMPOUNDS = [
- {id:"h2o",    a:"H", b:"O", result:"水",           yomi:"みず",           note:"H₂O",   emoji:"💧", type:"compound", fact:"わたしたちの体の半分いじょうが 水でできているよ"},
- {id:"nacl",   a:"Na",b:"Cl",result:"塩",           yomi:"しお",           note:"NaCl",  emoji:"🧂", type:"compound", fact:"海の水にも たくさん とけているよ"},
- {id:"kcl",    a:"K", b:"Cl",result:"塩化カリウム", yomi:"えんかかりうむ", note:"KCl",   emoji:"🌱", type:"compound", fact:"植物の ひりょうに つかわれることがあるよ"},
- {id:"co2",    a:"C", b:"O", result:"二酸化炭素",   yomi:"にさんかたんそ", note:"CO₂",   emoji:"💨", type:"compound", fact:"わたしたちが はく いきにも ふくまれているよ"},
- {id:"rust",   a:"Fe",b:"O", result:"さび",         yomi:"さび",           note:"酸化鉄", emoji:"🔩", type:"compound", fact:"鉄が 水や空気にふれると 赤くさびるんだよ"},
- {id:"nh3",    a:"N", b:"H", result:"アンモニア",   yomi:"あんもにあ",     note:"NH₃",   emoji:"👃", type:"compound", fact:"つーんとした においの気体だよ、そうじにも つかわれるよ"},
- {id:"glass",  a:"Si",b:"O", result:"ガラス",       yomi:"がらす",         note:"二酸化ケイ素", emoji:"🪟", type:"compound", fact:"すなの 主な成分でも あるよ"},
- {id:"patina", a:"Cu",b:"O", result:"緑青",         yomi:"ろくしょう",     note:"酸化銅", emoji:"🗿", type:"compound", fact:"銅ぞうが 青緑色に なるのは これのせいだよ"},
- {id:"lime",   a:"Ca",b:"O", result:"石灰",         yomi:"せっかい",       note:"酸化カルシウム", emoji:"🐚", type:"compound", fact:"貝がらや チョークにも かんけいが あるよ"},
- {id:"mgo",    a:"Mg",b:"O", result:"酸化マグネシウム", yomi:"さんかまぐねしうむ", note:"MgO", emoji:"💊", type:"compound", fact:"胃ぐすりに つかわれることがあるよ"},
- {id:"almina", a:"Al",b:"O", result:"アルミナ",     yomi:"あるみな",       note:"酸化アルミニウム", emoji:"💍", type:"compound", fact:"ルビーや サファイアの もとになる 成分でもあるよ"},
- {id:"hcl",    a:"H", b:"Cl",result:"塩酸",         yomi:"えんさん",       note:"HCl",   emoji:"⚗️", type:"compound", fact:"じつは わたしたちの 胃の中にもある 強い酸だよ"},
- {id:"h2s",    a:"H", b:"S", result:"硫化水素",     yomi:"りゅうかすいそ", note:"H₂S",   emoji:"🥚", type:"compound", fact:"くさった たまごのような においの もとだよ"},
- {id:"no2",    a:"N", b:"O", result:"二酸化窒素",   yomi:"にさんかちっそ", note:"NO₂",   emoji:"🚗", type:"compound", fact:"車の けむりに ふくまれる気体で、すいすぎると 体によくないよ"},
- {id:"so2",    a:"S", b:"O", result:"二酸化硫黄",   yomi:"にさんかいおう", note:"SO₂",   emoji:"🌧️", type:"compound", fact:"多くなると 酸性雨の げんいんに なることがあるよ"},
- {id:"caphos", a:"Ca",b:"P", result:"リン酸カルシウム", yomi:"りんさんかるしうむ", note:"Ca₃(PO₄)₂", emoji:"🦴", type:"compound", fact:"じつは わたしたちの ほねや 歯の 主な成分だよ"},
- {id:"nigari", a:"Mg",b:"Cl",result:"にがり",       yomi:"にがり",         note:"塩化マグネシウム", emoji:"🧊", type:"compound", fact:"とうふを かためる ときに つかわれるよ"},
- {id:"brass",  a:"Cu",b:"Zn",result:"真鍮",         yomi:"しんちゅう",     note:"合金",  emoji:"🚪", type:"alloy", fact:"ドアノブや トランペットにも つかわれる金ぞくだよ"},
- {id:"steel",  a:"Fe",b:"C", result:"鋼",           yomi:"はがね",         note:"合金",  emoji:"🔪", type:"alloy", fact:"ナイフや ビルなど、じょうぶさが ひつような ものに つかわれるよ"},
- {id:"whitegold", a:"Au",b:"Ag",result:"合金の金", yomi:"ごうきんのきん", note:"合金",  emoji:"💍", type:"alloy", fact:"金と銀を まぜると 白っぽい色の 金になるよ"},
- {id:"noble1", a:"He",b:"Ne",result:"反応しない",   yomi:"はんのうしない", note:"ひとりずきな きたい", emoji:"🚫", type:"trivia", fact:"ひとりずきな きたい どうしは、とても あんていしているから ほとんど くっつかないんだよ"},
- {id:"noble2", a:"Ne",b:"Ar",result:"反応しない",   yomi:"はんのうしない", note:"ひとりずきな きたい", emoji:"🚫", type:"trivia", fact:"ネオンも アルゴンも「ひとりずきな きたい」の なかまだから やっぱり くっつかないよ"}
-];
-const COMBO_COLOR = { compound:"#5fb894", alloy:"#e0ac3f", trivia:"#a98fd6" };
-
-
 /* ===================== 周期表 全118マス(位置と記号のみ) ===================== */
 const FULL_TABLE = [
  [1,1,"H"],[1,18,"He"],
@@ -578,7 +601,7 @@ function colorFor(entry){ return CAT_COLOR[entry.cat] || "#c9cfd8"; }
 
 /* ===================== セーブ ===================== */
 const SAVE_KEY = "genso-lab-save";
-let save = { unlocked:{}, bestStreak:0, compoundsFound:{} };
+let save = { unlocked:{}, bestStreak:0, bossWins:0, bossProgress:0, timeAttackBest:{score:0, rank:null} };
 
 // claude.aiのアーティファクト内では window.storage を、
 // 外部サイト(GitHub Pagesなど)にホスティングした場合は localStorage を使う
@@ -602,9 +625,11 @@ async function storageSet(key,value){
 async function loadSave(){
   try{ const r = await storageGet(SAVE_KEY); if(r&&r.value) save = JSON.parse(r.value); }
   catch(e){ /* 初回 */ }
-  if(!save.compoundsFound) save.compoundsFound = {};
+  if(typeof save.bossWins !== "number") save.bossWins = 0;
+  if(typeof save.bossProgress !== "number") save.bossProgress = 0;
+  if(!save.timeAttackBest) save.timeAttackBest = {score:0, rank:null};
 }
-function compoundFoundCount(){ return Object.keys(save.compoundsFound).filter(k=>save.compoundsFound[k]).length; }
+function unlockedCount(){ return Object.keys(save.unlocked).filter(k=>save.unlocked[k]).length; }
 let saveTimer=null;
 function persist(){
   clearTimeout(saveTimer);
@@ -612,7 +637,6 @@ function persist(){
     await storageSet(SAVE_KEY, JSON.stringify(save));
   },300);
 }
-function unlockedCount(){ return Object.keys(save.unlocked).filter(k=>save.unlocked[k]).length; }
 
 /* ===================== 状態 ===================== */
 let state = "loading";
@@ -623,12 +647,6 @@ let streak = 0;
 let answered = false;
 let pickedSymbol = null;
 let lastAsked = [];
-let curCompound = null;
-let curComboChoices = [];
-let lastAskedCompound = [];
-let comboAnswered = false;
-let comboPicked = null;
-let comboStreak = 0;
 let teasing = false;
 
 function pickWeighted(list){
@@ -697,6 +715,15 @@ function newQuestion(){
   }
 }
 
+function unlockElement(symbol){
+  if(!save.unlocked[symbol]){
+    save.unlocked[symbol] = true;
+    persist();
+    return true;
+  }
+  return false;
+}
+
 function answerQuiz(symbol){
   if(answered) return;
   answered = true;
@@ -705,50 +732,186 @@ function answerQuiz(symbol){
   if(correct){
     streak++;
     save.bestStreak = Math.max(save.bestStreak, streak);
-    save.unlocked[cur.symbol] = true;
-    persist();
+    unlockElement(cur.symbol);
   } else {
     streak = 0;
   }
   render();
 }
 
-function pickTargetCompound(){
-  let remaining = COMPOUNDS.filter(c=>!save.compoundsFound[c.id]);
-  if(remaining.length===0){
-    const pool = COMPOUNDS.filter(c=>!lastAskedCompound.includes(c.id));
-    const src = pool.length ? pool : COMPOUNDS;
-    return src[Math.floor(Math.random()*src.length)];
-  }
-  const notRecent = remaining.filter(c=>!lastAskedCompound.includes(c.id));
-  return (notRecent.length ? notRecent : remaining)[0];
+/* ===================== ボスに ちょうせん! ===================== */
+const BOSS_TITLES = [
+  {min:0, label:"みならい"},
+  {min:1, label:"ちょうせんしゃ"},
+  {min:3, label:"たっしゃ"},
+  {min:5, label:"めいじん"},
+  {min:10, label:"マイスター"}
+];
+function bossTitleFor(wins){
+  let label = BOSS_TITLES[0].label;
+  for(const t of BOSS_TITLES){ if(wins >= t.min) label = t.label; }
+  return label;
 }
 
-function newCompoundQuestion(){
-  curCompound = pickTargetCompound();
-  lastAskedCompound.push(curCompound.id);
-  if(lastAskedCompound.length>3) lastAskedCompound.shift();
-  const distractorPool = COMPOUNDS.filter(c=>c.id!==curCompound.id).slice();
-  for(let i=distractorPool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [distractorPool[i],distractorPool[j]]=[distractorPool[j],distractorPool[i]]; }
-  curComboChoices = [curCompound, ...distractorPool.slice(0,3)];
-  for(let i=curComboChoices.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [curComboChoices[i],curComboChoices[j]]=[curComboChoices[j],curComboChoices[i]]; }
-  comboAnswered = false;
-  comboPicked = null;
+const BOSSES = [
+  {name:"みずの ぬし",       emoji:"🐍", tiers:["common"],              hp:5},
+  {name:"てつの せんし",     emoji:"🦏", tiers:["uncommon"],            hp:6},
+  {name:"がんせきの きょじん",emoji:"🧌", tiers:["rare"],                hp:7},
+  {name:"こおりの まじょ",   emoji:"🦣", tiers:["doubleRare"],          hp:8},
+  {name:"ほのおの ドラゴン", emoji:"🐉", tiers:["tripleRare"],          hp:9},
+  {name:"いなずまの けもの", emoji:"🐺", tiers:["superRare"],           hp:10},
+  {name:"しんかいの ぬし",   emoji:"🐙", tiers:["hyperRare"],           hp:11},
+  {name:"まぼろしの きし",   emoji:"💀", tiers:["ultraRare"],           hp:12},
+  {name:"でんせつの りゅうおう",emoji:"🐲", tiers:["hundred"],           hp:13},
+  {name:"さいごの しゅごしん",emoji:"🐉👑", tiers:["ultraRare","hundred"], hp:15}
+];
+const BOSS_LIVES = 3;
+
+let bossIdx = 0;
+let bossPhaseResult = null; // null | "win" | "lose"
+let bossLives = BOSS_LIVES;
+let bossHpLeft = 5;
+let bossCur = null;
+let bossChoices = [];
+let bossAnswered = false;
+let bossPicked = null;
+
+function pickFromTiers(tiers){
+  const pool = ELEMENTS.filter(e=>tiers.includes(e.tier));
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+function bossDistractors(correctSymbol, tiers, n){
+  const pool = ELEMENTS.filter(e=>tiers.includes(e.tier) && e.symbol!==correctSymbol).slice();
+  for(let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]]; }
+  return pool.slice(0,n);
+}
+function setupBossChoices(el, tiers){
+  const distractors = bossDistractors(el.symbol, tiers, 3);
+  const arr = [el, ...distractors];
+  for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; }
+  return arr;
+}
+
+function startBoss(idx){
+  bossIdx = idx;
+  const boss = BOSSES[bossIdx];
+  bossPhaseResult = null;
+  bossLives = BOSS_LIVES;
+  bossHpLeft = boss.hp;
+  bossAnswered = false; bossPicked = null;
+  state = "bossPlay";
+  nextBossQuestion();
+}
+
+function nextBossQuestion(){
+  const boss = BOSSES[bossIdx];
+  bossCur = pickFromTiers(boss.tiers);
+  bossChoices = setupBossChoices(bossCur, boss.tiers);
+  bossAnswered = false; bossPicked = null;
   render();
 }
 
-function answerCompoundQuiz(id){
-  if(comboAnswered) return;
-  comboAnswered = true;
-  comboPicked = id;
-  const correct = id === curCompound.id;
+function answerBoss(symbol){
+  if(bossAnswered || bossPhaseResult) return;
+  bossAnswered = true;
+  bossPicked = symbol;
+  const correct = symbol === bossCur.symbol;
   if(correct){
-    comboStreak++;
-    save.compoundsFound[curCompound.id] = true;
-    persist();
+    unlockElement(bossCur.symbol);
+    bossHpLeft--;
+    if(bossHpLeft <= 0){
+      save.bossWins++;
+      if(save.bossProgress <= bossIdx) save.bossProgress = Math.min(bossIdx+1, BOSSES.length-1);
+      persist();
+      bossPhaseResult = "win";
+    }
   } else {
-    comboStreak = 0;
+    bossLives--;
+    if(bossLives <= 0){ bossPhaseResult = "lose"; }
   }
+  render();
+}
+
+/* ===================== タイムアタック ===================== */
+const RANK_INFO = {
+  bronze:  {label:"ブロンズ", icon:"🥉", color:"#c58a4a", min:0},
+  silver:  {label:"シルバー", icon:"🥈", color:"#9aa3ac", min:3},
+  gold:    {label:"ゴールド", icon:"🥇", color:"#e8c15c", min:6},
+  platinum:{label:"プラチナ", icon:"💎", color:"#7bd6c4", min:9},
+  diamond: {label:"ダイヤ",   icon:"👑", color:"#a98fd6", min:12}
+};
+function rankFor(score){
+  let r = "bronze";
+  for(const key of Object.keys(RANK_INFO)){ if(score >= RANK_INFO[key].min) r = key; }
+  return r;
+}
+
+let taTimeLeft = 30;
+let taScore = 0;
+let taCombo = 0;
+let taCur = null;
+let taChoices = [];
+let taAnswered = false;
+let taPicked = null;
+let taTimerId = null;
+let taNewRecord = false;
+
+function stopTaTimer(){
+  if(taTimerId){ clearInterval(taTimerId); taTimerId = null; }
+}
+
+function startTimeAttack(){
+  taTimeLeft = 30; taScore = 0; taCombo = 0; taAnswered = false; taPicked = null; taNewRecord = false;
+  state = "timeAttackPlay";
+  nextTaQuestion();
+  stopTaTimer();
+  taTimerId = setInterval(()=>{
+    taTimeLeft--;
+    if(taTimeLeft <= 0){
+      taTimeLeft = 0;
+      stopTaTimer();
+      finishTimeAttack();
+      return;
+    }
+    if(state === "timeAttackPlay"){
+      const timeEl = document.getElementById("taTimeLeft");
+      if(timeEl) timeEl.textContent = taTimeLeft;
+    }
+  }, 1000);
+}
+
+function nextTaQuestion(){
+  taCur = pickTargetElement();
+  const distractors = shuffledDistractors(taCur.symbol, 3, taCur.tier);
+  taChoices = [taCur, ...distractors];
+  for(let i=taChoices.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [taChoices[i],taChoices[j]]=[taChoices[j],taChoices[i]]; }
+  taAnswered = false; taPicked = null;
+  render();
+}
+
+function answerTa(symbol){
+  if(taAnswered || taTimeLeft<=0) return;
+  taAnswered = true;
+  taPicked = symbol;
+  const correct = symbol === taCur.symbol;
+  if(correct){
+    taScore++; taCombo++;
+    unlockElement(taCur.symbol);
+  } else {
+    taCombo = 0;
+  }
+  render();
+  setTimeout(()=>{ if(taTimeLeft>0 && state==="timeAttackPlay") nextTaQuestion(); }, 450);
+}
+
+function finishTimeAttack(){
+  const rank = rankFor(taScore);
+  taNewRecord = taScore > save.timeAttackBest.score;
+  if(taNewRecord){
+    save.timeAttackBest = {score:taScore, rank};
+    persist();
+  }
+  state = "timeAttackResult";
   render();
 }
 
@@ -768,6 +931,10 @@ function render(){
         <h1 class="title">げんそ発見ラボ</h1>
         <div class="subtitle">身の回りのものは、げんそという「材料」でできている</div>
         <div class="progress-chip">🧬 コレクション ${unlockedCount()} / ${ELEMENTS.length}</div>
+        <div class="badge-row">
+          <div class="player-badge">🏅 ${bossTitleFor(save.bossWins)}(ボスを ${save.bossWins}かい たおした)</div>
+          ${save.timeAttackBest.rank ? `<div class="player-badge">${RANK_INFO[save.timeAttackBest.rank].icon} タイムアタック さいこう ${save.timeAttackBest.score}もん(${RANK_INFO[save.timeAttackBest.rank].label})</div>` : ""}
+        </div>
         <div class="tier-row">
           ${TIER_ORDER.map(t=>{
             const unlocked = isTierUnlocked(t);
@@ -784,9 +951,13 @@ function render(){
           <div class="emo">🧬</div>
           <div class="txt"><b>げんそクイズに挑戦</b><span>記号を見て 名前をあてて図鑑をうめる</span></div>
         </button>
-        <button class="mode-btn gold" id="btnCombo">
-          <div class="emo">🧪</div>
-          <div class="txt"><b>くっつけると何になる？</b><span>げんそ2つを合体させて できるものをあてる(${compoundFoundCount()}/${COMPOUNDS.length})</span></div>
+        <button class="mode-btn boss" id="btnBoss">
+          <div class="emo">🗡️</div>
+          <div class="txt"><b>ボスに ちょうせん!</b><span>10体の モンスターを じゅんばんに たおそう</span></div>
+        </button>
+        <button class="mode-btn ta" id="btnTimeAttack">
+          <div class="emo">⏱️</div>
+          <div class="txt"><b>タイムアタック</b><span>30びょうで なんもん こたえられる?</span></div>
         </button>
         <button class="mode-btn gold" id="btnShowDex">
           <div class="emo">📖</div>
@@ -796,7 +967,8 @@ function render(){
     `;
     document.getElementById("btnObj").onclick = ()=>{ state="quizObject"; streak=0; newQuestion(); };
     document.getElementById("btnDex").onclick = ()=>{ state="quizDex"; streak=0; newQuestion(); };
-    document.getElementById("btnCombo").onclick = ()=>{ state="quizCombo"; comboStreak=0; newCompoundQuestion(); };
+    document.getElementById("btnBoss").onclick = ()=>{ state="bossIntro"; render(); };
+    document.getElementById("btnTimeAttack").onclick = ()=>{ state="timeAttackIntro"; render(); };
     document.getElementById("btnShowDex").onclick = ()=>{ state="dex"; selectedCell=null; render(); };
     return;
   }
@@ -883,41 +1055,12 @@ function render(){
           <span><i style="background:${CAT_COLOR.actinide}"></i>アクチノイド:めずらしい 金ぞく②</span>
         </div>
 
-        <h1 class="title" style="font-size:20px;margin-top:22px;">くっつけ図鑑</h1>
-        <div class="progress-chip">🧪 コレクション ${compoundFoundCount()} / ${COMPOUNDS.length}</div>
-        <div class="combo-dex">
-          ${COMPOUNDS.map(c=>{
-            const unlocked = !!save.compoundsFound[c.id];
-            const style = unlocked ? `background:${COMBO_COLOR[c.type]};color:#fff;` : "";
-            const cls = unlocked ? "combo-cell" : "combo-cell locked";
-            return `<div class="${cls}" style="${style}" data-cid="${c.id}">${unlocked ? c.emoji : '❓'}</div>`;
-          }).join("")}
-        </div>
-        <div class="detail-empty" id="comboDetail" style="margin-top:8px;">マスをタップすると くわしく見られるよ</div>
-        <div class="legend">
-          <span><i style="background:${COMBO_COLOR.compound}"></i>化合物</span>
-          <span><i style="background:${COMBO_COLOR.alloy}"></i>合金</span>
-          <span><i style="background:${COMBO_COLOR.trivia}"></i>とくべつ</span>
-        </div>
-
         <button class="btn-primary" id="toQuiz">クイズをつづける</button>
         <button class="btn-ghost" id="toTitle">タイトルにもどる</button>
       </div>
     `;
     document.querySelectorAll(".cell").forEach(c=>{
       c.onclick = ()=>{ selectedCell = DEX_ALL.find(x=>x.symbol===c.dataset.symbol); render(); };
-    });
-    document.querySelectorAll(".combo-cell").forEach(c=>{
-      c.onclick = ()=>{
-        const comp = COMPOUNDS.find(x=>x.id===c.dataset.cid);
-        const unlocked = !!save.compoundsFound[comp.id];
-        const box = document.getElementById("comboDetail");
-        if(unlocked){
-          box.innerHTML = `<div class="detail-panel"><div class="demo">${comp.emoji}</div><div class="txt"><b>${comp.result}(${comp.yomi})</b><div class="yomi">${comp.note}</div><div class="fact">${comp.fact}</div></div></div>`;
-        } else {
-          box.innerHTML = `<div class="detail-panel"><div class="demo">🔒</div><div class="txt"><b>？？？</b><div class="yomi">クイズで正解すると 見えるようになるよ</div></div></div>`;
-        }
-      };
     });
     document.getElementById("toQuiz").onclick = ()=>{ state="quizDex"; streak=0; newQuestion(); };
     document.getElementById("toTitle").onclick = ()=>{ state="title"; render(); };
@@ -997,56 +1140,178 @@ function render(){
     return;
   }
 
-  if(state==="quizCombo"){
-    const ea = BY_SYMBOL[curCompound.a];
-    const eb = BY_SYMBOL[curCompound.b];
-    const promptHtml = `
-      <div class="combo-row">
-        <div class="combo-chip"><span class="ce">${ea.emoji}</span><span class="cs">${ea.symbol}</span><span class="cn">${ea.name}(${ea.yomi})</span></div>
-        <span class="combo-op">+</span>
-        <div class="combo-chip"><span class="ce">${eb.emoji}</span><span class="cs">${eb.symbol}</span><span class="cn">${eb.name}(${eb.yomi})</span></div>
-        <span class="combo-op">=</span>
-        <div class="combo-chip"><span class="ce">${comboAnswered ? "✨" : "❓"}</span><span class="cs">?</span></div>
+  if(state==="bossIntro"){
+    app.innerHTML = `
+      <div class="card">
+        <div class="lab-emoji">🗡️</div>
+        <h1 class="title" style="font-size:28px;">ボスに ちょうせん!</h1>
+        <div class="subtitle">やさしい ボスから じゅんばんに たおしていこう</div>
+        <div class="badge-row"><div class="player-badge">🏅 いまの称号: ${bossTitleFor(save.bossWins)}(${save.bossWins}かい たおした)</div></div>
+        <div class="boss-list">
+          ${BOSSES.map((b,i)=>{
+            const unlocked = i <= save.bossProgress;
+            const cleared = i < save.bossProgress;
+            const cls = "boss-list-item" + (unlocked?"":" locked") + (cleared?" cleared":"");
+            return `<button class="${cls}" data-idx="${i}" ${unlocked?"":"disabled"}>
+              <span class="boss-list-emoji">${unlocked ? b.emoji : "🔒"}</span>
+              <span class="boss-list-txt">
+                <b>${i+1}. ${unlocked ? b.name : "？？？"}</b>
+                <span>${unlocked ? "HP " + b.hp : "まえの ボスを たおすと あらわれる"}</span>
+              </span>
+              ${cleared ? '<span class="boss-cleared-mark">✅</span>' : ""}
+            </button>`;
+          }).join("")}
+        </div>
+        <button class="btn-ghost" id="toTitleFromBoss">タイトルにもどる</button>
       </div>
-      <div class="prompt-clue" style="margin-top:10px;font-size:12px;color:var(--ink-soft);">くっつけると何になる？</div>
     `;
-    const choicesHtml = curComboChoices.map(c=>{
+    document.querySelectorAll(".boss-list-item:not(.locked)").forEach(b=>{
+      b.onclick = ()=> startBoss(parseInt(b.dataset.idx));
+    });
+    document.getElementById("toTitleFromBoss").onclick = ()=>{ state="title"; render(); };
+    return;
+  }
+
+  if(state==="bossPlay"){
+    const boss = BOSSES[bossIdx];
+
+    if(bossPhaseResult === "win" || bossPhaseResult === "lose"){
+      const won = bossPhaseResult === "win";
+      app.innerHTML = `
+        <div class="card">
+          <div class="result-emoji">${won ? "🏆" : "💦"}</div>
+          <div class="result-title">${won ? boss.name + "を たおした!" : "やられてしまった…"}</div>
+          <div class="boss-portrait">${boss.emoji}</div>
+          <div class="badge-row"><div class="player-badge">🏅 いまの称号: ${bossTitleFor(save.bossWins)}(${save.bossWins}かい たおした)</div></div>
+          <button class="btn-primary" id="retryBoss">${won ? "もういちど たたかう" : "もういちど ちょうせんする"}</button>
+          ${won && bossIdx < BOSSES.length-1 ? `<button class="btn-primary" id="nextBoss" style="background:linear-gradient(180deg,#3db3a2,var(--teal-dark));">つぎの ボスへ →</button>` : ""}
+          <button class="btn-ghost" id="toTitleFromBossResult">タイトルにもどる</button>
+        </div>
+      `;
+      document.getElementById("retryBoss").onclick = ()=> startBoss(bossIdx);
+      const nextBossBtn = document.getElementById("nextBoss");
+      if(nextBossBtn) nextBossBtn.onclick = ()=> startBoss(bossIdx+1);
+      document.getElementById("toTitleFromBossResult").onclick = ()=>{ state="title"; render(); };
+      return;
+    }
+
+    const fx = TIER_FX[bossCur.tier] || TIER_FX.common;
+    const promptBoxCls = (fx.box ? `prompt-box ${fx.box}` : "prompt-box");
+    const choicesHtml = bossChoices.map(c=>{
       let cls = "choice-btn";
-      if(comboAnswered){
-        if(c.id===curCompound.id) cls += " correct";
-        else if(c.id===comboPicked) cls += " wrong";
+      if(bossAnswered){
+        if(c.symbol===bossCur.symbol) cls += " correct";
+        else if(c.symbol===bossPicked) cls += " wrong";
       }
-      return `<button class="${cls}" data-id="${c.id}" ${comboAnswered?"disabled":""}>
-        <span class="cname" style="font-size:15px;color:var(--ink);">${c.result}</span>
-        <span class="cname">${c.yomi}</span>
+      return `<button class="${cls}" data-symbol="${c.symbol}" ${bossAnswered?"disabled":""}>
+        <span class="cname" style="font-size:15px;color:var(--ink);">${c.name}</span><span class="cname">${c.yomi}</span>
       </button>`;
     }).join("");
-
-    const wasCorrect = comboAnswered && comboPicked===curCompound.id;
-    const factBoxHtml = comboAnswered ? `
-      <div class="fact-reveal show ${wasCorrect?'':'wrongbox'}">
-        <b>${wasCorrect ? "せいかい!" : "おしい!"} ${curCompound.result}(${curCompound.yomi}) <span style="font-weight:400;">${curCompound.note}</span></b><br>${curCompound.fact}
-      </div>` : `<div class="fact-reveal"></div>`;
+    const wasCorrect = bossAnswered && bossPicked===bossCur.symbol;
 
     app.innerHTML = `
       <div class="card">
         <div class="quiz-top">
-          <span>🧪 くっつけると何になる？</span>
-          <span class="streak">${comboStreak>0 ? comboStreak+"問 連続正解中!" : ""}</span>
+          <span>🗡️ ${bossIdx+1}たいめ: ${boss.name}</span>
+          <span class="lives">${Array.from({length:BOSS_LIVES}).map((_,i)=>`<span class="${i<bossLives?'':'life-lost'}">❤️</span>`).join("")}</span>
         </div>
-        <div class="prompt-box">${promptHtml}</div>
+        <div class="boss-banner">
+          <div class="boss-portrait ${bossAnswered && wasCorrect ? 'boss-hit':''}">${boss.emoji}</div>
+          <div class="boss-hp-wrap">
+            <div class="boss-hp-track"><div class="boss-hp-fill" style="width:${(bossHpLeft/boss.hp*100)}%"></div></div>
+            <div class="boss-hp-label">ボスの のこりHP: ${bossHpLeft} / ${boss.hp}</div>
+          </div>
+        </div>
+        <div class="${promptBoxCls}">
+          <div class="prompt-emoji">${bossCur.emoji}</div>
+          <div class="prompt-symbol">${bossCur.symbol}</div>
+          <div class="prompt-clue" style="font-size:12px;color:var(--ink-soft);">この記号の名前は？</div>
+        </div>
         <div class="choices">${choicesHtml}</div>
-        ${factBoxHtml}
-        ${comboAnswered ? `<button class="btn-primary" id="nextCombo">つぎのもんだいへ →</button>` : ""}
-        <button class="btn-ghost" id="toTitle3">タイトルにもどる</button>
+        ${bossAnswered ? `<div class="fact-reveal show ${wasCorrect?'':'wrongbox'}"><b>${wasCorrect? "こうげき せいこう!" : "おしい!"} ${bossCur.name}(${bossCur.symbol})・${bossCur.yomi}</b></div>` : ""}
+        ${bossAnswered ? `<button class="btn-primary" id="nextBossQ">つぎへ →</button>` : ""}
+        <button class="btn-ghost" id="giveUpBoss">たたかいを やめる</button>
       </div>
     `;
     document.querySelectorAll(".choice-btn").forEach(b=>{
-      b.onclick = ()=>{ if(!comboAnswered) answerCompoundQuiz(b.dataset.id); };
+      b.onclick = ()=>{ if(!bossAnswered) answerBoss(b.dataset.symbol); };
     });
-    const nextComboBtn = document.getElementById("nextCombo");
-    if(nextComboBtn) nextComboBtn.onclick = ()=> newCompoundQuestion();
-    document.getElementById("toTitle3").onclick = ()=>{ state="title"; render(); };
+    const nextBossBtn = document.getElementById("nextBossQ");
+    if(nextBossBtn) nextBossBtn.onclick = ()=> nextBossQuestion();
+    document.getElementById("giveUpBoss").onclick = ()=>{ state="title"; render(); };
+    return;
+  }
+
+  if(state==="timeAttackIntro"){
+    app.innerHTML = `
+      <div class="card">
+        <div class="lab-emoji">⏱️</div>
+        <h1 class="title" style="font-size:28px;">タイムアタック</h1>
+        <div class="subtitle">30びょうで なんもん こたえられるかな?</div>
+        ${save.timeAttackBest.rank ? `<div class="badge-row"><div class="player-badge">${RANK_INFO[save.timeAttackBest.rank].icon} さいこう記録: ${save.timeAttackBest.score}もん(${RANK_INFO[save.timeAttackBest.rank].label})</div></div>` : ""}
+        <button class="mode-btn ta" id="startTa">
+          <div class="emo">▶️</div>
+          <div class="txt"><b>スタート!</b><span>合図なしで すぐに はじまるよ</span></div>
+        </button>
+        <button class="btn-ghost" id="toTitleFromTa">タイトルにもどる</button>
+      </div>
+    `;
+    document.getElementById("startTa").onclick = ()=> startTimeAttack();
+    document.getElementById("toTitleFromTa").onclick = ()=>{ state="title"; render(); };
+    return;
+  }
+
+  if(state==="timeAttackPlay"){
+    const choicesHtml = taChoices.map(c=>{
+      let cls = "choice-btn";
+      if(taAnswered){
+        if(c.symbol===taCur.symbol) cls += " correct";
+        else if(c.symbol===taPicked) cls += " wrong";
+      }
+      return `<button class="${cls}" data-symbol="${c.symbol}" ${taAnswered?"disabled":""}>
+        <span class="cname" style="font-size:15px;color:var(--ink);">${c.name}</span><span class="cname">${c.yomi}</span>
+      </button>`;
+    }).join("");
+    app.innerHTML = `
+      <div class="card">
+        <div class="quiz-top">
+          <span>⏱️ のこり <b id="taTimeLeft">${taTimeLeft}</b>びょう</span>
+          <span class="streak">${taCombo>=2 ? taCombo+"問 連続正解中!" : ""}</span>
+        </div>
+        <div class="progress-chip" style="margin-bottom:14px;">スコア ${taScore}もん</div>
+        <div class="prompt-box">
+          <div class="prompt-emoji">${taCur.emoji}</div>
+          <div class="prompt-symbol">${taCur.symbol}</div>
+          <div class="prompt-clue" style="font-size:12px;color:var(--ink-soft);">この記号の名前は？</div>
+        </div>
+        <div class="choices">${choicesHtml}</div>
+      </div>
+    `;
+    document.querySelectorAll(".choice-btn").forEach(b=>{
+      b.onclick = ()=>{ if(!taAnswered) answerTa(b.dataset.symbol); };
+    });
+    return;
+  }
+
+  if(state==="timeAttackResult"){
+    const rank = rankFor(taScore);
+    const info = RANK_INFO[rank];
+    app.innerHTML = `
+      <div class="card">
+        <div class="result-emoji">⏱️</div>
+        <div class="result-title">タイムアップ!</div>
+        <div class="rank-reveal" style="border-color:${info.color};">
+          <div class="rank-icon">${info.icon}</div>
+          <div class="rank-label" style="color:${info.color};">${info.label}</div>
+          <div class="rank-score">${taScore}もん せいかい</div>
+        </div>
+        ${taNewRecord ? '<div class="new-record">✨ じこベスト こうしん! ✨</div>' : `<div class="detail-empty">さいこう記録: ${save.timeAttackBest.score}もん(${RANK_INFO[save.timeAttackBest.rank].label})</div>`}
+        <button class="btn-primary" id="retryTa">もういちど ちょうせんする</button>
+        <button class="btn-ghost" id="toTitleFromTaResult">タイトルにもどる</button>
+      </div>
+    `;
+    document.getElementById("retryTa").onclick = ()=> startTimeAttack();
+    document.getElementById("toTitleFromTaResult").onclick = ()=>{ stopTaTimer(); state="title"; render(); };
     return;
   }
 }
